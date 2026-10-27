@@ -1,0 +1,7467 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>孚瑞肯 RAG 三渠道回答对照</title>
+<style>
+:root{font-family:"Microsoft YaHei",Arial,sans-serif;color:#17243a;background:#f4f7fb}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}
+main{max-width:2100px;margin:auto;padding:28px 30px 80px}
+.intro{background:#fff;border:1px solid #e0e8f1;border-radius:18px;padding:24px 28px;box-shadow:0 4px 22px #213c5f0a}
+h1{font-size:28px;margin:0 0 12px;color:#173b70}p{line-height:1.65}
+.subtitle{margin:0;color:#53647b}.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;color:#4a5c73;font-size:14px}
+.legend span{padding:7px 10px;border-radius:8px;background:#f0f5fa}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 2px}
+nav a{background:#e7effb;border:1px solid #cedcf2;border-radius:8px;color:#1b57a2;text-decoration:none;font-weight:700;padding:8px 10px;font-size:14px}
+nav a:hover{background:#d3e5ff}
+.question{margin-top:26px;background:#fff;border:1px solid #dce5ef;border-radius:16px;padding:18px 20px 20px;box-shadow:0 3px 16px #213c5f08;scroll-margin-top:16px}
+.question-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.question-heading>div{display:flex;align-items:center;gap:12px}.number{background:#245caa;color:white;border-radius:8px;padding:7px 9px;font-size:14px;font-weight:700}
+h2{font-size:20px;margin:0}.back{font-size:13px;color:#54759b;white-space:nowrap}
+.comparison{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.answer-card{border:1px solid #dce5ee;border-radius:11px;min-width:0;overflow:hidden;display:flex;flex-direction:column;background:#fff}
+.answer-card.old{border-top:4px solid #5380b9}.answer-card.new{border-top:4px solid #15a085}
+.card-head{padding:12px 16px;background:#f7faff;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.new .card-head{background:#f3fbf8}.card-head strong{font-size:17px}.card-head span{color:#536477;font-size:13px;text-align:right}
+.answer-body{padding:4px 17px 16px;max-height:620px;overflow:auto;line-height:1.65;font-size:14px;overflow-wrap:anywhere;flex:1;min-height:120px}
+.answer-body h1,.answer-body h2,.answer-body h3,.answer-body h4{font-size:16px;margin:17px 0 8px;color:#203c5e}
+.answer-body p{margin:10px 0}.answer-body ul,.answer-body ol{padding-left:22px}
+.answer-body table{border-collapse:collapse;display:block;max-width:100%;overflow:auto;font-size:13px;margin:12px 0}
+.answer-body th,.answer-body td{border:1px solid #d7e1eb;padding:7px 9px;min-width:60px;vertical-align:top}
+.answer-body th{background:#edf3f9}.answer-body pre{overflow:auto;background:#f1f4f8;padding:12px;border-radius:8px}
+.answer-body blockquote{border-left:3px solid #aac7e2;padding-left:12px;margin-left:0;color:#43546b}
+.missing-image{display:inline-block;color:#6a7789;background:#eef2f6;border:1px dashed #c3cfda;padding:4px 8px;border-radius:6px}
+.card-foot{padding:9px 16px;border-top:1px solid #e8edf3;font-size:12px;text-align:right}.card-foot a{color:#2869bb}
+.note{margin:14px 2px 0;padding:11px 14px;background:#f6f8fb;border-radius:9px;color:#40536b;font-size:14px}
+@media(max-width:800px){main{padding:16px}.comparison{grid-template-columns:1fr}.answer-body{max-height:470px}}
+@media print{body{background:#fff}main{max-width:none}.question{break-inside:avoid;box-shadow:none}.answer-body{max-height:none;overflow:visible}.back,nav{display:none}}
+
+.standard-answer{margin:0 0 15px;padding:14px 18px;background:#fff9ed;border:1px solid #efdfbd;border-left:4px solid #d99428;border-radius:9px;line-height:1.7;font-size:14px;overflow-wrap:anywhere}
+.standard-answer strong{display:block;margin-bottom:6px;color:#895b16;font-size:15px}
+.standard-answer p{margin:4px 0}.standard-answer table{border-collapse:collapse;display:block;max-width:100%;overflow:auto}
+.standard-answer th,.standard-answer td{border:1px solid #e4d7bd;padding:6px 8px}
+
+.answer-card.mcp{border-top:4px solid #8065b8}.mcp .card-head{background:#f8f5fd}.mcp .card-head span{white-space:nowrap}.answer-body .missing{color:#66758a;font-style:italic}@media(max-width:1180px){.comparison{grid-template-columns:1fr 1fr}.answer-card.mcp{grid-column:1/-1}}@media(max-width:800px){.comparison{grid-template-columns:1fr}.answer-card.mcp{grid-column:auto}}.triple-analysis{margin:12px 2px 0;padding:12px 15px;background:#f8f5fd;border-left:4px solid #8065b8;border-radius:8px;color:#3f3654;font-size:14px;line-height:1.7}.triple-analysis strong{margin-right:8px;color:#513b7a}/* BEGIN OVERALL TEST SUMMARY STYLE */
+.overall-summary{margin-top:20px;padding:20px 24px;background:#fff;border:1px solid #dfe6ef;border-radius:16px;box-shadow:0 4px 18px #1d365408;color:#243349}
+.overall-summary h2{font-size:22px;margin:0 0 10px;color:#173b70}
+.overall-summary h3{font-size:16px;margin:0 0 7px;color:#214468}
+.overall-summary p{margin:7px 0;line-height:1.7;font-size:14px}
+.overall-lead{font-size:15px!important}
+.overall-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+.overall-grid>div{padding:14px 16px;background:#f5f8fc;border:1px solid #e2eaf4;border-radius:10px}
+.overall-note{color:#5c6c80;border-top:1px solid #e2eaf4;padding-top:11px}
+@media(max-width:1100px){.overall-grid{grid-template-columns:1fr}}
+/* END OVERALL TEST SUMMARY STYLE */
+
+.report-switch{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 18px}.report-switch a{display:inline-block;padding:10px 14px;border:1px solid #cad8ea;border-radius:9px;background:#f3f7fd;color:#245b99;text-decoration:none;font-weight:700}.report-switch a.active{background:#245caa;color:#fff;border-color:#245caa}.report-switch a:hover{filter:brightness(.94)}
+</style>
+</head>
+<body><main id="top">
+<header class="intro">
+<div aria-label="两份报告" class="report-switch"><a aria-current="page" class="active" href="01_历史三渠道对照.html">历史三渠道对照 · 25 题</a><a href="02_更新后网站与WorkBuddy对照.html">更新后网站与 WorkBuddy 对照 · 69 题</a></div><h1>孚瑞肯 RAG · 三渠道回答对照</h1>
+<p class="subtitle">同一组 25 道题：左列为首次网站回答，中列为重新解析后的网站回答，右列为用户提供的 WorkBuddy · MCP 回答。25 道题均已收录；下方分析优先核对题目与手册原文，题库答案仅供参照。</p>
+
+<div class="legend"><span>网站两轮：改善 3 题</span><span>网站两轮：退步 7 题</span><span>网站两轮：大体持平 13 题</span><span>网站两轮：题目口径待修订 2 题</span><span>WorkBuddy · MCP 已录入 25 题</span></div>
+<nav aria-label="题号目录"><a href="#q3">Q3</a><a href="#q17">Q17</a><a href="#q18">Q18</a><a href="#q20">Q20</a><a href="#q22">Q22</a><a href="#q24">Q24</a><a href="#q26">Q26</a><a href="#q28">Q28</a><a href="#q29">Q29</a><a href="#q30">Q30</a><a href="#q31">Q31</a><a href="#q32">Q32</a><a href="#q33">Q33</a><a href="#q34">Q34</a><a href="#q35">Q35</a><a href="#q36">Q36</a><a href="#q37">Q37</a><a href="#q38">Q38</a><a href="#q39">Q39</a><a href="#q41">Q41</a><a href="#q68">Q68</a><a href="#q69">Q69</a><a href="#q76">Q76</a><a href="#q77">Q77</a><a href="#q78">Q78</a></nav>
+</header>
+<!-- BEGIN OVERALL TEST SUMMARY -->
+<section class="overall-summary" id="overall">
+<h2>全部测试结果 · 总体总结</h2>
+<p class="overall-lead">两份对照报告共覆盖原 100 题题库中的 <strong>94 道不同题目</strong>：历史三渠道对照 25 道，更新后网站与 WorkBuddy 对照 69 道。Q04、Q08、Q09、Q16、Q23、Q25 未纳入这两份报告。</p>
+<div class="overall-grid">
+<div><h3>网站回答</h3><p>在历史 25 道的两轮网站对比中，改善 3 道、退步 7 道、大体持平 13 道，另有 2 道题目口径待修订。更新后 69 道均有网站回答，但仍出现跨文档检索漏项、表格抽取难读，以及数值实际可在原表核实时却提示“回查未通过”等问题。</p></div>
+<div><h3>WorkBuddy 回答</h3><p>较擅长把分散在多份手册中的信息整理成直接答案；但有时把推测写得过于确定，或把某一型号的参数推广到整个系列。例如把“最多 8 台变频器联网”理解成“1 台变频泵拖 7 台工频泵”，以及早先漏列 FR380、PV380、PV580 等 IP65 产品。</p></div>
+<div><h3>综合判断与改进重点</h3><p>两边都能答出不少明确的型号、功率和功能参数；复杂题的差别主要在<strong>找全资料、读准表格、限定型号与版本、区分原文和推断</strong>。优先改进跨文档检索与表格识别，再修正数值回查误报；输出时先给结论，并标清适用型号及资料版本。</p></div>
+</div>
+<p class="overall-note">统计口径：上述 3／7／13／2 只评价历史 25 道中的两轮网站变化，不是全部 94 道的准确率。更新后新增 54 道目前是回答对照与简短分析，尚未全部逐题独立复核手册原文；题库参考答案也须结合原文判断。</p>
+</section>
+<!-- END OVERALL TEST SUMMARY -->
+<section class="question" id="q3">
+<div class="question-heading">
+<div><span class="number">Q3</span><h2>FR500 与 FR510 有什么区别？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>FR500 为开环矢量控制变频器，不支持 PG 卡闭环控制和同步电机应用；FR510 为高性能矢量控制变频器，支持 PG 卡闭环控制和同步电机应用，内嵌 FVC 控制。FR510 具备有 PG 矢量控制：调速范围 1:1000、速度控制精度 ±0.1%、0.00Hz 时 180% 启动转矩；而 FR500 无 PG 矢量控制 2 的调速范围为 1:200。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据当前知识库资料，FR500 与 FR510 的区别如下。以下仅列参考资料中明确记载的内容；“未记载”表示当前资料未提供，不作推断。</p>
+<h3>一、FR510 相对 FR500 明确增加的功能</h3>
+<p>根据《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第 1 页【FR510】记载：<br/>
+<strong>FR510 系列是在 FR500 的基础上，增加以下几点：</strong></p>
+<ol>
+<li>支持同步电动机控制</li>
+<li>支持多种 PG 卡</li>
+<li>支持主轴定向、脉冲跟随、零伺服等位置控制</li>
+<li>支持两组电机参数</li>
+</ol>
+<p>资料未列明 FR500 的基础功能清单，因此除上述明确增加项外，不推断 FR500 不具备其他功能。</p>
+<h3>二、控制类型与闭环能力</h3>
+<p>根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】记载：</p>
+<ul>
+<li><strong>FR500</strong>：为开环矢量控制变频器，<strong>不支持 PG 卡闭环控制和同步电机应用</strong>。</li>
+<li><strong>FR510</strong>：为高性能矢量控制变频器，<strong>支持 PG 卡闭环控制和同步电机应用</strong>。</li>
+</ul>
+<p>根据《FR20系列产品介绍 .pptx》第 13 页【FR20系列 &amp; FR500/FR510系列变频器配置对比】表格记载：</p>
+<ul>
+<li><strong>FR500</strong>：闭环控制为“不支持”。</li>
+<li><strong>FR510</strong>：闭环控制为“支持”。</li>
+</ul>
+<h3>三、FR500 与 FR510 配置对比</h3>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>FR500</th>
+<th>FR510</th>
+<th>资料依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>产品名称</td>
+<td>通用型变频器</td>
+<td>高性能变频器</td>
+<td>《FR20系列产品介绍 .pptx》第 13 页【FR20系列 &amp; FR500/FR510系列变频器配置对比】</td>
+</tr>
+<tr>
+<td>控制类型</td>
+<td>开环矢量控制变频器</td>
+<td>高性能矢量控制变频器</td>
+<td>《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】</td>
+</tr>
+<tr>
+<td>闭环控制</td>
+<td>不支持</td>
+<td>支持</td>
+<td>《FR20系列产品介绍 .pptx》第 13 页；《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】</td>
+</tr>
+<tr>
+<td>PG 卡</td>
+<td>不支持 PG 卡闭环控制</td>
+<td>支持多种 PG 卡</td>
+<td>《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】；《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第 1 页【FR510】</td>
+</tr>
+<tr>
+<td>同步电机</td>
+<td>不支持同步电机应用（注：第 13 页表格另记载为“同步电机/ 异步电机”）</td>
+<td>支持同步电动机控制</td>
+<td>《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】；《FR20系列产品介绍 .pptx》第 13 页；《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第 1 页【FR510】</td>
+</tr>
+<tr>
+<td>位置控制</td>
+<td>未记载</td>
+<td>支持主轴定向、脉冲跟随、零伺服等位置控制</td>
+<td>《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第 1 页【FR510】</td>
+</tr>
+<tr>
+<td>电机参数</td>
+<td>未记载</td>
+<td>支持两组电机参数</td>
+<td>《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第 1 页【FR510】</td>
+</tr>
+<tr>
+<td>功率范围</td>
+<td>0.7~1120kW</td>
+<td>未记载</td>
+<td>《FR20系列产品介绍 .pptx》第 13 页</td>
+</tr>
+<tr>
+<td>内置制动单元</td>
+<td>0.7~110kW</td>
+<td>未记载</td>
+<td>《FR20系列产品介绍 .pptx》第 13 页</td>
+</tr>
+<tr>
+<td>驱动电机类型</td>
+<td>同步电机/ 异步电机</td>
+<td>未记载</td>
+<td>《FR20系列产品介绍 .pptx》第 13 页</td>
+</tr>
+<tr>
+<td>内置直流电抗器</td>
+<td>不含</td>
+<td>未记载</td>
+<td>《FR20系列产品介绍 .pptx》第 14 页</td>
+</tr>
+<tr>
+<td>外置直流电抗器扩展</td>
+<td>132kW 及以上功率支持</td>
+<td>未记载</td>
+<td>《FR20系列产品介绍 .pptx》第 14 页</td>
+</tr>
+<tr>
+<td>USB 接口</td>
+<td>无</td>
+<td>未记载</td>
+<td>《FR20系列产品介绍 .pptx》第 14 页</td>
+</tr>
+<tr>
+<td>STO 端子</td>
+<td>无</td>
+<td>未记载</td>
+<td>《FR20系列产品介绍 .pptx》第 14 页</td>
+</tr>
+<tr>
+<td>通讯扩展卡</td>
+<td>PROFIBUS CAN PROFINET EtherCAT 4G WIFI Modbus-TCP</td>
+<td>未记载</td>
+<td>《FR20系列产品介绍 .pptx》第 14 页</td>
+</tr>
+</tbody>
+</table>
+<h3>四、需要特别说明的资料差异</h3>
+<h4>1. FR500 是否支持同步电机存在不一致记载</h4>
+<ul>
+<li>根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】记载：FR500 不支持同步电机应用。</li>
+<li>但根据《FR20系列产品介绍 .pptx》第 13 页表格记载：FR500 的“驱动电机类型”栏为“同步电机/ 异步电机”。</li>
+</ul>
+<p>当前资料未提供进一步说明，无法判定该差异原因。<br/>
+但 <strong>FR510 支持同步电动机控制</strong> 在《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第 1 页【FR510】和《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】中均有明确记载。</p>
+<h4>2. FR510 多项配置在对比表中为空白</h4>
+<p>在《FR20系列产品介绍 .pptx》第 13 页和第 14 页的配置对比表中，FR510 的功率范围、内置制动单元、驱动电机类型、内置直流电抗器、外置直流电抗器扩展、USB 接口、STO 端子、通讯扩展卡等栏目均为空白。<br/>
+因此，当前资料不能据此判断 FR510 是否具备或未具备上述配置。</p>
+<h4>3. 系列整体控制方式描述</h4>
+<p>根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】记载：<br/>
+FR500/FR510 系列矢量控制变频器主要定位为中高端市场的 OEM 客户及特定要求的风机、水泵类负载应用场合，其设计灵活，内嵌 FVC(FR510)、SVC、VF 控制于一身。<br/>
+该描述为 FR500/FR510 系列整体描述，未单独区分 FR500 与 FR510 各自的控制方式配置。</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第【FR510】章节记载：<br/>
+<strong>FR510系列是在FR500的基础上，增加以下几点：</strong></p>
+<ul>
+<li>支持同步电动机控制</li>
+<li>支持多种PG卡</li>
+<li>支持主轴定向、脉冲跟随、零伺服等位置控制</li>
+<li>支持两组电机参数</li>
+</ul>
+<p>根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第【前言】章节记载：</p>
+<ul>
+<li><strong>FR500为开环矢量控制变频器，不支持PG卡闭环控制和同步电机应用。</strong></li>
+<li><strong>FR510为高性能矢量控制变频器，支持PG卡闭环控制和同步电机应用。</strong></li>
+<li>该手册同时描述 FR500/FR510 系列矢量控制变频器“内嵌FVC（FR510）、SVC、VF控制于一身”。</li>
+</ul>
+<p>根据《FR20系列产品介绍 .pptx》第【…FR20系列 &amp; FR500/FR510系列变频器配置对比】及第【…FR20系列 &amp; FR500/FR510系列变频器配置对比（第 2 次）】章节记载，FR500 与 FR510 的配置对比如下：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>FR500</th>
+<th>FR510</th>
+<th>出处/说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>产品名称</td>
+<td>通用型变频器</td>
+<td>高性能变频器</td>
+<td>《FR20系列产品介绍 .pptx》配置对比表</td>
+</tr>
+<tr>
+<td>控制方式/闭环控制</td>
+<td>开环矢量控制变频器；不支持PG卡闭环控制；配置对比表中“闭环控制”为“不支持”</td>
+<td>高性能矢量控制变频器；支持PG卡闭环控制；配置对比表中“闭环控制”为“支持”；手册前言称系列“内嵌FVC（FR510）、SVC、VF控制于一身”</td>
+<td>《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】；《FR20系列产品介绍 .pptx》配置对比表</td>
+</tr>
+<tr>
+<td>同步电机应用</td>
+<td>手册前言明确：不支持同步电机应用</td>
+<td>支持同步电动机控制；支持同步电机应用</td>
+<td>《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】；《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》【FR510】</td>
+</tr>
+<tr>
+<td>驱动电机类型（PPT配置对比表）</td>
+<td>同步电机/ 异步电机</td>
+<td>当前参考资料未记载</td>
+<td>《FR20系列产品介绍 .pptx》配置对比表</td>
+</tr>
+<tr>
+<td>PG卡</td>
+<td>不支持PG卡闭环控制</td>
+<td>支持多种PG卡；支持PG卡闭环控制</td>
+<td>《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】；《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》【FR510】</td>
+</tr>
+<tr>
+<td>位置控制</td>
+<td>当前参考资料未记载</td>
+<td>支持主轴定向、脉冲跟随、零伺服等位置控制</td>
+<td>《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》【FR510】</td>
+</tr>
+<tr>
+<td>电机参数</td>
+<td>当前参考资料未记载</td>
+<td>支持两组电机参数</td>
+<td>《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》【FR510】</td>
+</tr>
+<tr>
+<td>功率范围</td>
+<td>0.7~1120kW</td>
+<td>当前参考资料未记载</td>
+<td>《FR20系列产品介绍 .pptx》配置对比表</td>
+</tr>
+<tr>
+<td>内置制动单元</td>
+<td>0.7~110kW</td>
+<td>当前参考资料未记载</td>
+<td>《FR20系列产品介绍 .pptx》配置对比表</td>
+</tr>
+<tr>
+<td>内置直流电抗器</td>
+<td>不含</td>
+<td>当前参考资料未记载</td>
+<td>《FR20系列产品介绍 .pptx》配置对比（第 2 次）</td>
+</tr>
+<tr>
+<td>外置直流电抗器扩展</td>
+<td>132kW 及以上功率支持</td>
+<td>当前参考资料未记载</td>
+<td>《FR20系列产品介绍 .pptx》配置对比（第 2 次）</td>
+</tr>
+<tr>
+<td>USB接口</td>
+<td>无</td>
+<td>当前参考资料未记载</td>
+<td>《FR20系列产品介绍 .pptx》配置对比（第 2 次）</td>
+</tr>
+<tr>
+<td>STO端子</td>
+<td>无</td>
+<td>当前参考资料未记载</td>
+<td>《FR20系列产品介绍 .pptx》配置对比（第 2 次）</td>
+</tr>
+<tr>
+<td>通讯扩展卡</td>
+<td>PROFIBUS CAN PROFINET EtherCAT 4G WIFI Modbus-TCP</td>
+<td>当前参考资料未记载</td>
+<td>《FR20系列产品介绍 .pptx》配置对比（第 2 次）</td>
+</tr>
+</tbody>
+</table>
+<h3>核心区别归纳</h3>
+<ol>
+<li>
+<p><strong>FR510 是 FR500 基础上的增强型产品</strong><br/>
+根据《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第【FR510】章节，FR510 在 FR500 基础上增加了：</p>
+<ul>
+<li>同步电动机控制</li>
+<li>多种PG卡支持</li>
+<li>主轴定向、脉冲跟随、零伺服等位置控制</li>
+<li>两组电机参数支持</li>
+</ul>
+</li>
+<li>
+<p><strong>闭环控制能力不同</strong></p>
+<ul>
+<li>FR500：开环矢量控制，不支持PG卡闭环控制。</li>
+<li>FR510：高性能矢量控制，支持PG卡闭环控制。</li>
+</ul>
+</li>
+<li>
+<p><strong>同步电机支持不同</strong></p>
+<ul>
+<li>FR500：手册前言明确不支持同步电机应用。</li>
+<li>FR510：支持同步电动机控制/同步电机应用。</li>
+</ul>
+</li>
+<li>
+<p><strong>产品定位/名称不同</strong></p>
+<ul>
+<li>FR500：配置对比表中为“通用型变频器”。</li>
+<li>FR510：配置对比表中为“高性能变频器”。</li>
+</ul>
+</li>
+<li>
+<p><strong>部分配置项仅 FR500 有明确记载，FR510 未记载</strong><br/>
+对于功率范围、内置制动单元、内置直流电抗器、外置直流电抗器扩展、USB接口、STO端子、通讯扩展卡等项目，当前参考资料仅明确记载了 FR500 的配置，未记载 FR510 对应内容，因此不能据此推断 FR510 与 FR500 相同。</p>
+</li>
+</ol>
+<h3>资料不一致提示</h3>
+<p>关于 FR500 是否支持同步电机，当前参考资料存在不一致：</p>
+<ul>
+<li>《FR20系列产品介绍 .pptx》配置对比表中，FR500 的“驱动电机类型”写为：<strong>同步电机/ 异步电机</strong>。</li>
+<li>《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【前言】中明确写为：<strong>FR500为开环矢量控制变频器，不支持PG卡闭环控制和同步电机应用。</strong></li>
+</ul>
+<p>当前参考资料未提供进一步说明，无法判定以哪份资料为准。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是两个产品系列的对比，我从知识库分别检索 FR500 和 FR510 的规格，再汇总差异。
+已查到，知识库里有明确原文（来源：《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第二章/第六章，以及 FR20 系列对比 PPT）。两系列共用同一份手册，型号表注明"<strong>FR510 系列只需将上表中的 FR500 替换为 FR510 即可</strong>"——即硬件框架一致，核心差异在控制性能。</p>
+<p><strong>结论：FR500 是通用型矢量变频器（开环），FR510 是带编码器闭环的高性能矢量变频器。FR510 在 FR500 基础上多了"有 PG 矢量控制（闭环）"，其余规格基本通用。</strong></p>
+<h2>核心差异对比</h2>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>FR500</th>
+<th>FR510</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>产品定位</strong></td>
+<td>矢量控制变频器（通用型）</td>
+<td>高性能闭环矢量控制变频器</td>
+</tr>
+<tr>
+<td><strong>闭环控制</strong></td>
+<td>不支持</td>
+<td><strong>支持</strong>（需配 PG 卡 + 编码器）</td>
+</tr>
+<tr>
+<td><strong>控制方式</strong></td>
+<td>V/F、无 PG 矢量 1、无 PG 矢量 2</td>
+<td>在 FR500 基础上<strong>增加：有 PG 矢量控制（F00.08=3）</strong></td>
+</tr>
+<tr>
+<td><strong>调速范围</strong></td>
+<td>最大 1:200（无 PG 矢量 2）</td>
+<td>1:1000（有 PG 矢量）</td>
+</tr>
+<tr>
+<td><strong>速度控制精度</strong></td>
+<td>±0.3%（无 PG 矢量 1/2）</td>
+<td><strong>±0.1%</strong>（有 PG 矢量）</td>
+</tr>
+<tr>
+<td><strong>速度波动</strong></td>
+<td>±0.3%</td>
+<td><strong>±0.1%</strong>（有 PG 矢量）</td>
+</tr>
+<tr>
+<td><strong>起动转矩</strong></td>
+<td>0.5Hz:150%（V/F、无 PG 矢量1）；0.25Hz:150%（无 PG 矢量2）</td>
+<td><strong>0.0Hz:180%</strong>（有 PG 矢量）</td>
+</tr>
+<tr>
+<td><strong>转矩响应</strong></td>
+<td>&lt;10ms（无 PG）</td>
+<td>&lt;10ms（无 PG）；有 PG 更优</td>
+</tr>
+</tbody>
+</table>
+<h2>两者一致的规格（共用）</h2>
+<ul>
+<li><strong>功率范围</strong>：FR500 为 0.7~1120kW；FR510 同框架（型号直接替换）</li>
+<li><strong>输入/电压</strong>：三相 380V（-15%~+30%），50/60Hz</li>
+<li><strong>最高输出频率</strong>：0.00~590.00Hz</li>
+<li><strong>载波频率</strong>：0.7kHz~16kHz</li>
+<li><strong>过载能力</strong>：G 型 150%/180%/200%（60s/10s/1s），P 型 120%/145%/160%</li>
+<li><strong>防护等级 IP20、强迫风冷、效率≥93%、壁挂/法兰安装</strong></li>
+<li><strong>I/O 端子、多段速（16 段）、PID、简易 PLC、参数拷贝</strong>等通用功能</li>
+</ul>
+<h2>选型提示</h2>
+<ul>
+<li>普通风机水泵、一般传动、对精度要求不高的场合 → <strong>FR500</strong> 足够，性价比更高。</li>
+<li>需要<strong>零速大转矩、高精度稳速、定位/卷绕/起重</strong>等闭环控制的场合 → 选 <strong>FR510</strong>（配合编码器）。</li>
+</ul>
+<p>⚠️ 两点补充（避免混淆）：</p>
+<ol>
+<li>知识库里另有一份《FR500-IP65 简易手册》——那是 FR500 的<strong>密封版本</strong>（防护等级 IP65、I/O 端子口数略多），属于 FR500 子型号，不是 FR510 的差异。</li>
+<li>FR20 对比 PPT 还提到 FR500 不含内置直流电抗器（132kW 及以上支持外置扩展）、无 STO 端子、无 USB——这些在两系列主手册里未作为 FR500/FR510 间的差异项列出，如需我把"电抗器/STO/通讯卡"等扩展配置逐项拉出来对比，可以再查。</li>
+</ol>
+<p>需要我把 FR510 的"有 PG 矢量控制（F00.08=3）"相关功能码（PG 卡类型、编码器参数）也整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>核心差异仍答出；资料对同步电机能力的冲突仍在。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：部分正确</strong>两轮网站回答都抓住了开环与闭环差异。FR500/FR510 共用手册前言还明确写着：FR500 不支持同步电机应用，FR510 支持。WorkBuddy 给出 PG 性能数值，但漏了这项原文差异；“其余规格基本通用”也不宜概括所有配置。</div></section>
+<section class="question" id="q17">
+<div class="question-heading">
+<div><span class="number">Q17</span><h2>变频器型号里的2S和4T有什么不同？请举例说明。</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>2S 指单相 220V 电源输入机型，4T 指三相 380V 电源输入机型。例如 IF150A-2S-1.5B 为单相220V、适配1.5kW；FR150A-4T-2.2B 为三相380V、适配2.2kW；FR600 用 5T 表示三相480V~550V中压输入。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>抱歉，当前知识库参考资料中未收录此相关内容。</p>
+<p>现有参考资料中<strong>未明确记载“2S”和“4T”在变频器型号中的定义、含义或差异</strong>，因此无法据此确定二者不同，也无法给出有依据的对比示例。</p>
+<p>为便于核对，当前资料中仅能确认以下与“2S/4T”相关的型号或相邻记载：</p>
+<table>
+<thead>
+<tr>
+<th>来源文档/章节</th>
+<th>资料中出现的型号或相关记载</th>
+<th>是否说明“2S”与“4T”的区别</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>根据《31050096-FR150A_CH_V1.5_.pdf》第二章【产品信息】4.5节记载</td>
+<td>出现 FR150A-2S-0.2B、FR150A-2S-0.4B、FR150A-2S-0.7B、FR150A-2S-1.1B、FR150A-4T-0.7B、FR150A-4T-1.5B、FR150A-2S-1.5B、FR150A-2S-2.2B、FR150A-4T-5.5B 等型号</td>
+<td>否，仅列出型号及外形/安装尺寸，未说明“2S/4T”含义</td>
+</tr>
+<tr>
+<td>根据《31.05.0166_FR01简易用户手册_中文_V1.2.pdf》【FR01 系列变频器简易说明书 V1.2】记载</td>
+<td>出现 FR01-2S-0.4B、FR01-2S-0.7B、FR01-2S-1.5B 等型号；同章节还出现“单相电源:220V，50/60Hz”的表格项</td>
+<td>否，资料未明确说明“2S”即代表单相</td>
+</tr>
+<tr>
+<td>根据《31.05.0158_FR530简易用户手册_中文_V2.7_20260302.pdf》第一章【产品信息】1.3【产品技术规格】记载</td>
+<td>出现 FR530-4T-315G/355P、FR530-4T-355G/400P、FR530-4T-400G/450P、FR530-4T-450G/500P、FR530-4T-500G/560P、FR530-4T-560G/630P 等型号；同章节出现“额定输入电压（V）：三相 380 V（-15%～+30%）”</td>
+<td>否，资料未明确说明“4T”即代表三相</td>
+</tr>
+<tr>
+<td>根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》2.5【穿墙装尺寸】记载</td>
+<td>出现 FR500-4T-4.0G/5.5PB、FR500-4T-5.5G/7.5PB、FR500-4T-7.5G/011PB 等型号；同章节出现“三相电源:380V，50/60Hz 范围:-15%～+30%”</td>
+<td>否，资料未明确说明“4T”含义</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论</strong>：当前参考资料不足以说明“2S”和“4T”的不同；如需准确区分，需要参考资料中明确记载型号命名规则、产品选型说明或电源相数定义。</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>抱歉，当前知识库参考资料中未收录此相关内容。</p>
+<p>根据《31.05.0166_FR01简易用户手册_中文_V1.2.pdf》之完整章节【FR01 系列变频器简易说明书 V1.2】“1、产品选型表”相关记录表记载：当前资料未直接定义“2S”和“4T”的含义，也未明确说明二者有什么不同；现有片段不足以得出确定结论。</p>
+<p>以下仅列出资料中可核对的型号与电源条件片段，供核对，不作为“2S/4T”定义结论：</p>
+<table>
+<thead>
+<tr>
+<th>举例型号</th>
+<th>所在记录表项</th>
+<th>原文可见信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FR01-2S-0.4B</td>
+<td>第 14 项</td>
+<td>项目_1：FR01-2S-0.4B；项目_2：1.0；项目_3：6.5；项目_4：2.5</td>
+</tr>
+<tr>
+<td>FR01-2S-0.4B</td>
+<td>第 33 项</td>
+<td>项目_1：FR01-2S-0.4B；项目_2：1.0；项目_4：6.5；并出现“2.5 0.37”</td>
+</tr>
+<tr>
+<td>FR01-4T-0.4B</td>
+<td>第 22 项</td>
+<td>项目_1：FR01-4T-0.4B；项目_2：1.0；项目_3：2.5；项目_4：1.6</td>
+</tr>
+<tr>
+<td>FR01-2S-4.0B</td>
+<td>第 20 项</td>
+<td>项目_1：FR01-2S-4.0B；项目_2：6.0 三相电源:380V，50/60Hz；项目_3：范围:-15%～+30%</td>
+</tr>
+<tr>
+<td>FR01-2S-4.0B</td>
+<td>第 37 项</td>
+<td>项目_1：FR01-2S-4.0B 三相电源：380V，；项目_2：6.0；项目_4：30；并出现“17 4.0”</td>
+</tr>
+</tbody>
+</table>
+<p>补充可核对的电源条件片段：</p>
+<ul>
+<li>第 13 项出现：变频器型号 - 单相电源:220V，50/60Hz</li>
+<li>第 32 项出现：单相电源：220V， 50/60Hz - 电源容量 KVA</li>
+<li>第 20 项、第 37 项中，FR01-2S-4.0B 与 三相电源:380V，50/60Hz / 三相电源：380V， 字样同时出现</li>
+</ul>
+<p>因此，基于当前参考资料：</p>
+<ol>
+<li>不能确定“2S”和“4T”的正式含义；</li>
+<li>不能确定“2S”和“4T”的完整区别；</li>
+<li>资料中可见 FR01-2S 系列型号既出现在“单相电源:220V，50/60Hz”相关片段中，也出现 FR01-2S-4.0B 与“三相电源:380V，50/60Hz”同时出现的片段，故不能仅凭当前资料将“2S/4T”作确定性区分。</li>
+</ol>
+<blockquote>
+<p>⚠️ 数值/型号回查未通过：以下内容未出现在本次引用的原文里，请核对原文后再采用 —— FR01-2S</p>
+<p>（已回查 10 项硬实体：型号 / 功能码 / 数值单位 / 端子信号）</p>
+</blockquote>
+<p>参考出处与依据 (5 处权威摘录)</p>
+<h2>判定</h2>
+<p>错误：未回答 2S 与 4T 的含义。页面还将同一型号与单相、三相标签错误关联，并显示数值/型号回查未通过。与上次相比，核心问题未改善。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这个问题在前面 FR500/FR510 手册的型号命名规则里已经查到了原文，我直接基于知识库内容回答（来源：《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第二章 产品型号命名规则）。</p>
+<p><strong>结论：<code>2S</code> 和 <code>4T</code> 都是型号中"输入电压相数 + 电压等级"的代号，区别在供电相数和电压——</strong></p>
+<table>
+<thead>
+<tr>
+<th>代号</th>
+<th>拆解</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>2S</strong></td>
+<td><code>2</code>=电压等级 220V；<code>S</code>=Single phase（单相）</td>
+<td><strong>单相 220V</strong> 输入</td>
+</tr>
+<tr>
+<td><strong>4T</strong></td>
+<td><code>4</code>=电压等级 380V；<code>T</code>=Three phase（三相）</td>
+<td><strong>三相 380V</strong> 输入</td>
+</tr>
+</tbody>
+</table>
+<p>两者都允许电压波动范围 <strong>−15%～+30%</strong>，频率 50/60Hz。</p>
+<h2>命名结构示例</h2>
+<p>FR 系列型号格式为：<strong>系列代号 − 电压等级+相数 − 功率/机型</strong></p>
+<pre><code>FR500  -  4T   -  0.7G/1.5PB
+        │        │
+        三相380V  0.7kW通用机 / 1.5kW风机泵机
+</code></pre>
+<h2>具体例子</h2>
+<ul>
+<li><strong>FR500-2S-0.75G</strong>：单相 220V 输入，0.75kW 通用型（G 型，恒转矩）。</li>
+<li><strong>FR500-4T-0.7G/1.5PB</strong>：三相 380V 输入，0.7kW 通用机（G）/ 1.5kW 风机泵机（PB）。</li>
+<li>同理 <strong>FR510-4T-7.5G/011PB</strong> 就是三相 380V、7.5kW 通用机 / 11kW 风机泵机的高性能闭环版本。</li>
+</ul>
+<h2>选型提示</h2>
+<ul>
+<li>单相电网、小功率设备（如小型机床、风机、家用/商用单相场合）→ 选 <strong>2S（单相 220V）</strong>。</li>
+<li>工业三相电网、主流传动 → 选 <strong>4T（三相 380V）</strong>，这也是 FR500/FR510 的绝对主力规格。</li>
+</ul>
+<p>⚠️ 注意：型号里的 <code>2</code> 和 <code>4</code> 是"电压等级代号"（对应 220V / 380V），不是功率；真正的功率写在后面的 <code>0.75G</code>、<code>0.7G/1.5PB</code> 那段。之前查过的 SY380 输入端是单相 220V，但它属另一个系列命名体系，代号不套用这里的 2S/4T 规则。</p>
+<p>需要我把 FR 系列完整的型号命名规则（系列代号、制动单元代号、机型 G/P、行业专用代号等）整理成一张速查表吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>两轮均未解释型号代码含义。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确</strong>两轮网站回答都未解释代码。WorkBuddy 说清了 2S＝单相 220V、4T＝三相 380V，并给出型号例子；附带的电压偏差与选型建议不属于代码定义，应按具体手册核对。</div></section>
+<section class="question" id="q18">
+<div class="question-heading">
+<div><span class="number">Q18</span><h2>FR600的机型为什么以5T开头？对应电压范围是多少？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>FR600 为中压变频器，5T 对应 AC550V 等级（三相480V~550V输入，允许偏差 -15%~+10%，50/60Hz），另有 6T 对应 AC660V 等级（15~710kW）。如 FR600-5T-011 即 AC550V 等级的 11kW 机型。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第二章【产品信息】之 <strong>2.2 FR600 系列说明</strong> 中“表 2-1 FR600 系列产品型号及技术数据”记载：</p>
+<ol>
+<li><strong>关于“为什么以 5T 开头”</strong><br/>
+当前知识库参考资料中<strong>未收录</strong>对 FR600 型号中“5T”命名含义或命名原因的直接说明，因此不能依据现有资料确定其命名原因。</li>
+<li><strong>关于“5T 机型对应电压范围”</strong><br/>
+中文手册表 2-1 中，<strong>FR600-5T-xxx</strong> 系列型号列于以下电源条件之下：</li>
+</ol>
+<p>型号系列<br/>
+对应电源条件</p>
+<p>FR600-5T-xxx<br/>
+三相电源：<strong>480 V-550V，50/60 Hz</strong>，范围：<strong>-15%～+10%</strong></p>
+<p>作为对照，表中 <strong>FR600-6T-xxx</strong> 系列型号列于：</p>
+<p>型号系列<br/>
+对应电源条件</p>
+<p>FR600-6T-xxx<br/>
+三相电源：<strong>575V-690V，50/60Hz</strong>，范围：<strong>-15%～+10%</strong><br/>
+3. <strong>补充：英文手册中的额定输入电压表述</strong><br/>
+根据《31.05.0039_FR600用户手册_英文_V2.2_20260225.pdf》Chapter 1 Safety Precautions 之 <strong>2.3 Technical Features of FR600</strong> 记载，FR600 的额定输入电压为：</p>
+<p>项目<br/>
+规格</p>
+<p>Rated input voltage (V)<br/>
+3-Phase: <strong>550V, (-30%~+10%)</strong></p>
+<p>Rated input voltage (V)<br/>
+3-Phase: <strong>690V, (-30%~+10%)</strong></p>
+<p>但该英文章节未明确说明“5T”“6T”与上述电压等级的一一对应关系。</p>
+<p><strong>结论</strong>：</p>
+<ul>
+<li>现有资料<strong>未说明</strong> FR600 机型“以 5T 开头”的原因。</li>
+<li>按中文手册表 2-1，<strong>FR600-5T 系列对应三相电源 480 V-550V，50/60 Hz，范围 -15%～+10%</strong>。</li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第二章【产品信息】记载：</p>
+<ul>
+<li>产品铭牌上的型号“用数字、符号和字母组合的方式表示了其所属系列、适用电源种类、功率等级等信息”。</li>
+<li>该章节给出“图 2-2 产品型号命名规则”：</li>
+</ul>
+<p><span class="missing-image">原回答图片：图 2-2 产品型号命名规则</span></p>
+<p>但当前参考资料中<strong>未明确记载“5T”中“5”和“T”各自代表的具体含义</strong>，因此不能确定“5T”开头的逐字符命名解释。</p>
+<p>关于对应电压范围，根据同一文档第二章【产品信息】中“表 2-1 FR600 系列产品型号及技术数据”记载：</p>
+<ul>
+<li><strong>FR600-5T 系列型号</strong>（如 FR600-5T-011、FR600-5T-015、FR600-5T-018 等）列于以下电源条件之下：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>适用电源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>三相电源:480 V-550V，50/60 Hz范围：-15%～+ 10%</td>
+</tr>
+</tbody>
+</table>
+<p>因此，<strong>FR600-5T 系列对应的电压范围为：三相电源 480 V-550V，50/60 Hz，范围 -15%～+ 10%</strong>。</p>
+<p>补充对照：同表还将 <strong>FR600-6T 系列型号</strong>列于“三相电源:575V-690V，50/60Hz范围：-15%～+10%”之下。</p>
+<p>另根据《31.05.0039_FR600用户手册_英文_V2.2_20260225.pdf》Chapter 1 Safety Precautions &gt; 2.3 Technical Features of FR600 中 Table 2-2 记载，额定输入电压为：</p>
+<ul>
+<li>3-Phase:550V, (-30%~+10%)</li>
+<li>3-Phase: 690V, (-30%~+10%)</li>
+</ul>
+<p>该英文条目未直接说明“5T”的命名含义。</p>
+<hr/>
+<blockquote>
+<p>⚠️ <strong>数值/型号回查未通过</strong>：以下内容未出现在本次引用的原文里，请核对原文后再采用 —— <code>FR600-5T</code>、<code>FR600-6T</code><br/>
+（已回查 17 项硬实体：型号 / 功能码 / 数值单位 / 端子信号）</p>
+</blockquote>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是 FR600 的型号命名规则，我从知识库检索它的命名规则原文来确认"5T"含义和电压范围。
+已查到，知识库里有明确原文（来源：《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第二章 型号命名与技术规格、表 2-1/2-2）。</p>
+<p><strong>结论：FR600 是 550V/690V 中压矢量变频器，型号里的"5T"是"电压等级代号 + 相数代号"——<code>5</code>=550V 电压等级，<code>T</code>=三相（Three phase）。它沿用了 FR 系列的电压等级编码规则（2=220V、4=380V、5=550V、6=690V）。FR600 提供 5T（550V）和 6T（690V）两个电压档，都是三相，所以型号以 5T / 6T 开头，没有单相版本。</strong></p>
+<h2>为什么是 5T（及 6T）</h2>
+<p>FR 系列的"电压等级代号"随电压升高而递增，FR600 落在中压段：</p>
+<ul>
+<li>FR500/FR510：<code>2S</code>=单相220V、<code>4T</code>=三相380V</li>
+<li><strong>FR600：<code>5T</code>=三相550V、<code>6T</code>=三相690V</strong></li>
+</ul>
+<p>因为 FR600 定位中压传动（矿山、起重、大型风机泵等），供电都是三相工业电网，所以只有 <code>T</code>（三相），没有 <code>S</code>（单相）。</p>
+<h2>对应电压范围</h2>
+<table>
+<thead>
+<tr>
+<th>代号</th>
+<th>额定电压</th>
+<th>允许电压范围</th>
+<th>频率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>5T</strong></td>
+<td>三相 <strong>550V</strong></td>
+<td>中文手册：<strong>480~550V</strong>，波动 <strong>−15%～+10%</strong></td>
+<td>50/60Hz</td>
+</tr>
+<tr>
+<td><strong>6T</strong></td>
+<td>三相 <strong>690V</strong></td>
+<td>中文手册：<strong>575~690V</strong>，波动 <strong>−15%～+10%</strong></td>
+<td>50/60Hz</td>
+</tr>
+</tbody>
+</table>
+<p>⚠️ 一处手册差异提醒：英文版手册（31.05.0039 V2.2）把额定电压写成 <strong>550V（−30%～+10%）</strong> 和 <strong>690V（−30%～+10%）</strong>，与中文版的下限 −15% 不一致。两个版本上限都是 +10%（比 FR500 的 +30% 更严格，中压器件耐压余量小）。实际选型建议以中文正式版手册和机型铭牌为准。</p>
+<h2>举例说明</h2>
+<ul>
+<li><strong>FR600-5T-022</strong>：<code>FR600</code>系列 · <code>5T</code>三相550V · <code>022</code>=22kW 适配电机（通用机型）。</li>
+<li><strong>FR600-6T-022</strong>：<code>6T</code>三相690V · 同样 22kW。同一功率下有 5T/6T 两种供电版本可选。</li>
+<li>注意 FR600 的型号只写功率数字（如 011、022、400），<strong>不像 FR500 那样分 G/P（通用/风机泵）后缀</strong>——FR600 表 2-1 是按一套功率对应，不另分 G 型/P 型。</li>
+</ul>
+<p>需要我把 FR 全系列（FR500/FR510/FR600/SY380 等）的"电压等级代号→电压"对照表，或 FR600 全部 5T/6T 型号的功率-电流清单整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>电压范围正确，5T 具体含义仍不清。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确</strong>两轮网站回答只给出了电压区间，未解释 5T。WorkBuddy 补全了三相 550V 等级及 480～550V 范围。它补充的 6T“690V”与题库所写“AC660V”等级叫法不同；FR600 V2.1 型号表列三相 575～690V，代号释义还需对照命名图核实。</div></section>
+<section class="question" id="q20">
+<div class="question-heading">
+<div><span class="number">Q20</span><h2>需要一台 0.75kW 的 FR01 变频器，有哪些电源形式可选？型号分别是什么？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>FR01 分单相AC220V（0.4~4.0kW）和三相AC380V（0.4~7.5kW）两种。0.75kW 对应 FR01-2S-0.7B（单相220V）或 FR01-4T-0.7B（三相380V）。FR01 为经济书本型，支持导轨安装和零距离并排安装。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0166_FR01简易用户手册_中文_V1.2.pdf》第 1 页【FR01 系列变频器简易说明书 V1.2】中“1、产品选型表”相关条目记载，针对 0.75kW 的 FR01 变频器，当前参考资料中可明确确认的信息如下：</p>
+<table>
+<thead>
+<tr>
+<th>可确认项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>适配电机功率</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>电源形式</td>
+<td>单相电源:220V，50/60Hz</td>
+</tr>
+<tr>
+<td>对应型号</td>
+<td>FR01-2S-0.7B</td>
+</tr>
+<tr>
+<td>同条选型参数</td>
+<td>电源容量：1.5 KVA；输入电流：9.3 A；额定输出：4.2 A</td>
+</tr>
+</tbody>
+</table>
+<p>补充说明：</p>
+<ol>
+<li>参考资料中还出现 FR01-4T-0.7B（尺寸表中写作 FR01-4T-0. 7B），并在选型表片段中出现 0.75 数值，但该片段未完整给出该型号的电源形式、电源容量等字段，因此不能据此确认其电源形式。</li>
+<li>当前知识库参考资料中未明确收录 0.75kW 对应的“三相电源:380V，50/60Hz”可选型号及完整参数。</li>
+</ol>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0166_FR01简易用户手册_中文_V1.2.pdf》之【FR01 系列变频器简易说明书 V1.2】章节中“1、产品选型表”相关记录记载，当前参考资料中<strong>明确可确认</strong>的 0.75kW 对应选项如下：</p>
+<table>
+<thead>
+<tr>
+<th>适配电机功率</th>
+<th>电源形式</th>
+<th>型号</th>
+<th style="text-align:right">电源容量 KVA</th>
+<th style="text-align:right">输入电流 A</th>
+<th style="text-align:right">额定输出 A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.75</td>
+<td>单相电源：220V，50/60Hz</td>
+<td>FR01-2S-0.7B</td>
+<td style="text-align:right">1.5</td>
+<td style="text-align:right">9.3</td>
+<td style="text-align:right">4.2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论：</strong></p>
+<ul>
+<li>若需要 <strong>0.75kW</strong> 的 FR01 变频器，参考资料中明确列出的型号为：<strong>FR01-2S-0.7B</strong>。</li>
+<li>其电源形式为：<strong>单相电源：220V，50/60Hz</strong>。</li>
+</ul>
+<p><strong>补充说明：</strong><br/>
+参考资料中另有省略段出现“0.75”数值，但未完整显示对应型号及电源形式字段，因此无法据此确认是否还存在其他电源形式或型号。关于 0.75kW 的完整可选电源形式及全部型号，当前参考资料信息不足，需以原始文档完整选型表核对为准。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是未查过的 FR01 系列，我从知识库检索它的电源形式（单相/三相、电压等级）和 0.75kW 对应的型号。
+已查到，知识库里有完整选型表（来源：《31.05.0166_FR01简易用户手册_中文_V1.2.pdf》表 2-1 产品型号及技术数据、《FR01详细说明书.docx》第二章）。</p>
+<p><strong>结论：FR01 的 0.75kW（适配电机 0.75kW）有两种电源形式可选——单相 220V 和三相 380V，对应型号分别是 <code>FR01-2S-0.7B</code> 和 <code>FR01-4T-0.7B</code>。</strong></p>
+<h2>0.75kW 可选电源形式与型号</h2>
+<table>
+<thead>
+<tr>
+<th>电源形式</th>
+<th>型号</th>
+<th>适配电机</th>
+<th>额定输出电流</th>
+<th>电压允许范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>单相 220V</strong>（2S）</td>
+<td><strong>FR01-2S-0.7B</strong></td>
+<td>0.75 kW</td>
+<td>4.2 A</td>
+<td>220V（−15%～+20%）</td>
+</tr>
+<tr>
+<td><strong>三相 380V</strong>（4T）</td>
+<td><strong>FR01-4T-0.7B</strong></td>
+<td>0.75 kW</td>
+<td>2.5 A</td>
+<td>380V（−15%～+30%）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注：型号中段 <code>0.7</code> 指适配 0.75kW 电机（取整标注），后缀 <code>B</code> 为 FR01 系列的机型代号。</p>
+</blockquote>
+<h2>为什么会分两种电源</h2>
+<p>FR01 是<strong>小功率经济型变频器</strong>，为了适配不同供电现场，提供了单相和三相两个电压版本：</p>
+<ul>
+<li><strong>2S</strong> = 单相（Single phase）220V，适合小型单相电网场合（如单相 220V 进线的小设备、商用场景）。</li>
+<li><strong>4T</strong> = 三相（Three phase）380V，工业三相电网主流规格。</li>
+</ul>
+<h2>选型提示</h2>
+<ul>
+<li>供电是<strong>单相 220V</strong> → 选 <strong>FR01-2S-0.7B</strong>（输出电流更大，4.2A）。</li>
+<li>供电是<strong>三相 380V</strong> → 选 <strong>FR01-4T-0.7B</strong>（输出电流 2.5A，体积/成本通常更优）。</li>
+<li>同系列还有 0.37kW（0.4B）、1.5kW（1.5B）、2.2kW（2.2B）、4.0kW（4.0B）等，FR01 系列<strong>不区分 G 型/P 型</strong>（通用机型）。</li>
+</ul>
+<p>横向补充（供参考）：FR01 的控制方式、过载能力（150%/180% 60s/3s）、载波频率（0.7~12kHz）等与其他 FR 系列结构一致，但它是入门级定位，I/O 端子数较少（4 路开关量输入、1 路模拟量输入、1 路继电器+1 路开关量+1 路模拟量输出），不带闭环矢量。</p>
+<p>需要我把 FR01 全系列（0.37~7.5kW）的「单相/三相型号对照表」或它的端子定义/功能码整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>两轮均只答单相，漏三相型号。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确</strong>两轮网站回答均漏掉三相型号。WorkBuddy 同时给出 FR01-2S-0.7B 和 FR01-4T-0.7B，解决了本题；体积、成本等选型判断并非这道题的手册事实。</div></section>
+<section class="question" id="q22">
+<div class="question-heading">
+<div><span class="number">Q22</span><h2>FR150A-4T-075 的输出电流和适配电机功率是多少？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>额定输出电流 150A（同系列轻载值 168A），适配电机 75kW（100HP）。该型号电源容量 114kVA、输入电流 157A。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31050096-FR150A_CH_V1.5_.pdf》第二章【产品信息】第 2.2 节【FR150A 系列说明】中“表 2-1 FR150A 系列产品型号及技术数据”记载，FR150A-4T-075 的相关数据如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>重载额定输出电流</td>
+<td>150 A</td>
+</tr>
+<tr>
+<td>轻载额定输出电流</td>
+<td>168 A</td>
+</tr>
+<tr>
+<td>适配电机功率</td>
+<td>75 kW / 100 HP</td>
+</tr>
+</tbody>
+</table>
+<p>补充说明：该型号属于表中“三相电源：380V，50/60Hz，范围：-15%～+30%”系列。</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31050096-FR150A_CH_V1.5_.pdf》第二章【产品信息】中“表 2-1 FR150A 系列产品型号及技术数据”记载：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th style="text-align:right">FR150A-4T-075 对应数据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>重载额定输出电流</td>
+<td style="text-align:right">150 A</td>
+</tr>
+<tr>
+<td>轻载额定输出电流</td>
+<td style="text-align:right">168 A</td>
+</tr>
+<tr>
+<td>适配电机功率</td>
+<td style="text-align:right">75 kW / 100 HP</td>
+</tr>
+</tbody>
+</table>
+<p>因此，<strong>FR150A-4T-075 的输出电流为：重载额定输出电流 150 A、轻载额定输出电流 168 A；适配电机功率为 75 kW（100 HP）</strong>。</p>
+<hr/>
+<blockquote>
+<p>⚠️ <strong>数值/型号回查未通过</strong>：以下内容未出现在本次引用的原文里，请核对原文后再采用 —— <code>168A</code>、<code>75KW</code><br/>
+（已回查 4 项硬实体：型号 / 功能码 / 数值单位 / 端子信号）</p>
+</blockquote>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>FR150A 系列还没查过，我从知识库检索它的型号表，确认 4T-075 这个规格的输出电流和适配电机功率。
+已查到，知识库里有完整选型表（来源：《31050096-FR150A_CH_V1.5_.pdf》第二章 表 2-1 产品型号及技术数据）。</p>
+<p><strong>FR150A-4T-075 的关键参数如下——</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>适配电机功率</strong></td>
+<td><strong>75 kW（100 HP）</strong></td>
+</tr>
+<tr>
+<td><strong>输出电流（重载/恒转矩）</strong></td>
+<td><strong>150 A</strong></td>
+</tr>
+<tr>
+<td><strong>输出电流（轻载/变转矩）</strong></td>
+<td><strong>168 A</strong></td>
+</tr>
+<tr>
+<td>输入电流</td>
+<td>157 A</td>
+</tr>
+<tr>
+<td>电源容量</td>
+<td>114 kVA</td>
+</tr>
+</tbody>
+</table>
+<h2>说明</h2>
+<ul>
+<li><strong>型号拆解</strong>：<code>4T</code>=三相 380V，<code>075</code>=适配电机 <strong>75kW</strong>（大功率段省略小数点，直接以数字表示 kW）。所以这就是一台 75kW 三相 380V 变频器。</li>
+<li><strong>输出电流为什么有两个值</strong>：FR150A 不像 FR500/FR510 那样标 G 型/P 型，而是用**重载（恒转矩）<strong>与</strong>轻载（变转矩）**来区分：
+<ul>
+<li><strong>150A</strong> 是重载额定输出电流——对应恒转矩负载（如起重、挤出机），也是通常说的"额定输出电流"。</li>
+<li><strong>168A</strong> 是轻载额定输出电流——对应风机、水泵等变转矩负载，可驱动的负载更"软"一些，所以电流余量更大。</li>
+</ul>
+</li>
+<li>选型时若按<strong>通用/恒转矩</strong>工况，认 <strong>150A / 75kW</strong> 这一组即可。</li>
+</ul>
+<p>横向参考：你之前查的 FR600 中压系列、FR01 小功率系列都不分重载/轻载双标，FR150A 这种"重载/轻载双电流"标注更接近工业中大功率变频器的常见做法。</p>
+<p>需要我把 FR150A 全系列（0.25kW~160kW）的"重载/轻载输出电流 + 适配功率"对照表整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>数值正确；第二轮页面提示部分数字回查未通过，应核对原文。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：正确</strong>三份回答均给出 75kW 和 150A；WorkBuddy 还区分轻载 168A，并补充 157A 输入电流、114kVA 电源容量。第二轮网站的部分数字曾提示回查未通过，最终仍应以型号表为准。</div></section>
+<section class="question" id="q24">
+<div class="question-heading">
+<div><span class="number">Q24</span><h2>HS580-4T-7.5B适配的液压系统最大流量和压力是多少？额定输出电流多大？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>适配液压系统最大流量 40L/min、压力 17.5MPa；额定输出电流 17A，适配电机 7.5kW，输入电流 20A；配套制动电阻推荐 500W、≥65Ω（制动单元标准内置）。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0120_HS580液压伺服驱动器手册_中文_V1.4_20260814.pdf》第一章产品信息 <strong>1.4 HS580 伺服驱动器液压配置选型表</strong> 记载，HS580-4T-7.5B 的相关参数如下：</p>
+<table>
+<thead>
+<tr>
+<th>参数项</th>
+<th>原文记载值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>额定输出电流(A)</td>
+<td>17</td>
+</tr>
+<tr>
+<td>适配液压系统最大流量(L/min)</td>
+<td>40</td>
+</tr>
+<tr>
+<td>适配液压系统压力(Mpa)</td>
+<td>原文该列单元格记载为："三相380V 范17.5 围：-15%~20%"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>客观说明</strong>：原文表格中"适配液压系统压力(Mpa)"列对应 HS580-4T-7.5B 行的单元格内容为"三相380V 范17.5 围：-15%~20%"，该文本格式与压力数值（Mpa）不匹配，疑似原文排版存在混排（将输入电压信息"三相380V 范围：-15%~20%"与数值"17.5"合并于同一单元格）。当前参考资料中未以独立、明确的压力数值形式记载该型号的适配液压系统压力，因此<strong>无法从现有参考资料中得出确定的压力值</strong>。建议核对原始文档确认该列数据。</p>
+<p>其余可确认参数：</p>
+<ul>
+<li>适配电机容量：7.5 KW</li>
+<li>输入电流：20 A</li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0120_HS580液压伺服驱动器手册_中文_V1.4_20260814.pdf》第一章【产品信息】中“伺服驱动器型号 / 额定输出电流(A) / 适配电机容量（KW） / 输入电流（A） / 适配液压系统最大流量(L/min) / 适配液压系统压力(Mpa) / 输入电压（V）”表格记载：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th style="text-align:right">HS580-4T-7.5B 原文记载</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>额定输出电流</td>
+<td style="text-align:right"><strong>17 A</strong></td>
+</tr>
+<tr>
+<td>适配液压系统最大流量</td>
+<td style="text-align:right"><strong>40 L/min</strong></td>
+</tr>
+<tr>
+<td>适配液压系统压力</td>
+<td style="text-align:right">当前表格该行“适配液压系统压力(Mpa)”列原文显示为：<strong>“三相380V 范17.5 围：-15%~20%”</strong></td>
+</tr>
+</tbody>
+</table>
+<p>关于“适配液压系统压力”：<br/>
+该单元格文本存在明显混排，既包含数值 <strong>17.5</strong>，又混入了类似输入电压/波动范围的文本“三相380V 范围：-15%~20%”。因此，当前参考资料中<strong>不足以确认一个完整、独立、无歧义的适配液压系统压力规格值</strong>；如需最终确认压力值，建议以原始 PDF 表格版式核对。</p>
+<p>可确定答案为：</p>
+<ul>
+<li><strong>额定输出电流：17 A</strong></li>
+<li><strong>适配液压系统最大流量：40 L/min</strong></li>
+<li><strong>适配液压系统压力：当前资料中该行原文为“三相380V 范17.5 围：-15%~20%”，无法据此单独确认完整压力规格。</strong></li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>HS580 是液压专用变频器，之前没查过，我从知识库检索它的规格，尤其是液压系统的最大流量/压力和 4T-7.5B 的输出电流。
+已查到，知识库里有 HS580 的「液压配置选型表」（来源：《31.05.0120_HS580液压伺服驱动器手册_中文_V1.4_20260814.pdf》第一章 1.4 节）。注意 HS580 是<strong>液压伺服驱动器</strong>，不是普通变频器，所以手册直接给出了适配液压系统的流量/压力。</p>
+<p><strong>HS580-4T-7.5B 的核心参数如下——</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>额定输出电流</strong></td>
+<td><strong>17 A</strong></td>
+</tr>
+<tr>
+<td><strong>适配液压系统最大流量</strong></td>
+<td><strong>40 L/min</strong></td>
+</tr>
+<tr>
+<td><strong>适配液压系统压力</strong></td>
+<td><strong>17.5 MPa</strong></td>
+</tr>
+<tr>
+<td>适配电机容量</td>
+<td>7.5 kW（10 HP）</td>
+</tr>
+<tr>
+<td>输入电流</td>
+<td>20 A</td>
+</tr>
+<tr>
+<td>电源</td>
+<td>三相 380V（范围 −15%～+20%）</td>
+</tr>
+<tr>
+<td>最高输出频率</td>
+<td>600 Hz（参数可调）</td>
+</tr>
+<tr>
+<td>过载能力</td>
+<td>150% 额定电流 60s</td>
+</tr>
+</tbody>
+</table>
+<h2>说明</h2>
+<ul>
+<li><strong>型号拆解</strong>：<code>4T</code>=三相 380V，<code>7.5B</code>=适配 7.5kW 电机。所以这是一台 7.5kW 的液压伺服驱动器。</li>
+<li><strong>流量/压力的读法</strong>：手册用一张专门的"液压配置选型表"把每台驱动器能带的液压系统最大流量（L/min）和最大压力（MPa）直接列出来了。7.5B 对应 <strong>40 L/min、17.5 MPa</strong>。</li>
+<li><strong>压力值</strong>：系列内液压适配压力统一为 <strong>17.5 MPa</strong>（手册中 030B 及更大功率行的压力列清晰标注 17.5，7.5B 因排版/OCR 未单独标出，但属同系列统一值）。</li>
+<li><strong>横向对比</strong>：HS580 全系列流量随功率从 40 L/min（7.5B）一路到 1335 L/min（315），压力统一 17.5 MPa，额定输出电流从 17A 到 600A。</li>
+</ul>
+<p>⚠️ 一点提示：HS580 的"适配液压系统压力 17.5 MPa"是驱动器<strong>可驱动液压系统</strong>的配套上限，不是驱动器本身的电压/绝缘参数；实际系统压力仍由液压泵、阀块和负载决定。</p>
+<p>需要我把 HS580 全系列（7.5B~315）的「输出电流 / 适配流量 / 适配压力」对照表整理成一份速查表吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>流量、电流可答；压力列仍与电压文字混排。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，解释有误</strong>两轮网站回答未能可靠给出压力；WorkBuddy 给出 40L/min、17.5MPa、17A。HS580 手册第 1.4 节表首行直接出现 17.5，不是回答所说的从其他功率行推断；1.3 与 1.4 表的输入电流也分别为 20.5A 和 20A。</div></section>
+<section class="question" id="q26">
+<div class="question-heading">
+<div><span class="number">Q26</span><h2>无PG矢量控制2（SVC2）时的调速范围能达到多少？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>1:200；无 PG 矢量控制 1（SVC1）为 1:100；V/F 控制为 1:50。FR510 支持有 PG 矢量控制时可达 1:1000。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第二章产品信息中“0.00Hz:180%（有 PG 矢量控制）”章节的【技术与作业规程记录表】第 9 项“控制特性 - 调速范围”记载：</p>
+<ul>
+<li>无 PG 矢量控制 2 的调速范围：1:200</li>
+</ul>
+<p>该资料同时列出的完整调速范围为：</p>
+<table>
+<thead>
+<tr>
+<th>控制方式</th>
+<th>调速范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V/F 控制</td>
+<td>1:50</td>
+</tr>
+<tr>
+<td>无 PG 矢量控制 1</td>
+<td>1:100</td>
+</tr>
+<tr>
+<td>无 PG 矢量控制 2</td>
+<td>1:200</td>
+</tr>
+<tr>
+<td>有 PG 矢量控制</td>
+<td>1:1000</td>
+</tr>
+</tbody>
+</table>
+<p>因此，无 PG 矢量控制 2（SVC2）时的调速范围可达到 1:200。</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0152_FR33简易用户手册_中文_中性_V1.0_20260224.pdf》第一章【产品信息】中“控制特性—调速范围”记载：</p>
+<table>
+<thead>
+<tr>
+<th>控制方式</th>
+<th style="text-align:right">调速范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V/F 控制</td>
+<td style="text-align:right">1:50</td>
+</tr>
+<tr>
+<td>无 PG 矢量控制 1</td>
+<td style="text-align:right">1:100</td>
+</tr>
+<tr>
+<td><strong>无 PG 矢量控制 2</strong></td>
+<td style="text-align:right"><strong>1:200</strong></td>
+</tr>
+<tr>
+<td>有 PG 矢量控制</td>
+<td style="text-align:right">1:1000</td>
+</tr>
+</tbody>
+</table>
+<p>因此，<strong>无 PG 矢量控制 2 时的调速范围为 1:200</strong>。</p>
+<p>补充说明：参考资料中未直接出现“SVC2”字样；但《31.05.0168_FR580用户手册_中文_V1.4_20260506.pdf》前言中“控制特性—速度范围”也记载，<strong>无传感器矢量控制 2 的速度范围为 1:200</strong>。若“SVC2”对应“无 PG/无传感器矢量控制 2”，则答案同样为 <strong>1:200</strong>。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是 FR 系列通用的一个技术参数，知识库里 FR150A 手册的「产品技术规格表」有明确数字（FR500/FR510 手册一致），直接给你结论。</p>
+<p><strong>无 PG 矢量控制 2（SVC2）的调速范围：1:200。</strong></p>
+<p>来源：《31050096-FR150A_CH_V1.5_.pdf》第二章 表 2-2 技术规格，控制特性一栏：</p>
+<table>
+<thead>
+<tr>
+<th>控制方式</th>
+<th>调速范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V/F 控制</td>
+<td>1:50</td>
+</tr>
+<tr>
+<td>无 PG 矢量控制 1（SVC1）</td>
+<td>1:100</td>
+</tr>
+<tr>
+<td><strong>无 PG 矢量控制 2（SVC2）</strong></td>
+<td><strong>1:200</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>说明</h2>
+<ul>
+<li><strong>1:200 的含义</strong>：以额定频率（如 50Hz）为基准，SVC2 下变频器可从 <strong>0.25Hz</strong> 一直到最高输出频率（FR150A 最高 600Hz）稳定调速，即最低能跑到额定转速的 1/200。这比 V/F 的 1:50、SVC1 的 1:100 都要宽，是开环矢量控制里性能最好的一档。</li>
+<li><strong>配套精度</strong>：SVC2 的速度控制精度 ±0.2%、速度波动 ±0.3%、起动转矩 0.25Hz 可达 180%。</li>
+</ul>
+<h2>一个重要前提</h2>
+<p>不是所有机型都支持 SVC2。横向看：</p>
+<ul>
+<li><strong>支持 SVC2</strong> 的有：FR150A、FR500/FR510（无 PG 矢量 2）、IF150（无 PG 矢量 1/2）。</li>
+<li><strong>只到 SVC1</strong> 的有：REK10（手册只列 V/f 与无 PG 矢量控制 1，无 SVC2）、FR01（入门级，无闭环、SVC 档位较少）、HS580（液压伺服驱动器，走的是伺服控制逻辑，不按这个档位分）。</li>
+</ul>
+<p>如果你问的是<strong>某一台具体机型</strong>（比如刚查的 FR150A-4T-075 或 HS580），需要我针对那台把 SVC2/调速范围再单独核一遍手册确认吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>两轮均答 1:200。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，解释需收紧</strong>三份回答的核心值均为 SVC2 调速范围 1:200。WorkBuddy 把 1:200 直接解释成从 0.25Hz 一直到设备最高 600Hz 稳定调速，这超出了该比值本身所能证明的内容。</div></section>
+<section class="question" id="q28">
+<div class="question-heading">
+<div><span class="number">Q28</span><h2>FR580 的防护等级、冷却方式、安装方式和可安装位置？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>IP65 防护等级、自然冷却、壁挂式或 DIN 导轨安装。IP65 机型可安装在室外，但应尽量安装在屋檐下或其他阴凉处，避免阳光直射和雨雪直射；安装在室内时应远离窗户以防雷击，且不要安装在密闭箱内。机身由液晶板、接线盒、散热器、安装板、铭牌和“开始”按钮组成，功率范围 2.2~110kW。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>根据《31.05.0168_FR580用户手册_中文_V1.4_20260506.pdf》【前言】的参考记载：</p>
+<p>前言</p>
+<p>FR580系列是一款高防护矢量控制变频器，防护等级为IP65，</p>
+<p>主要用于对风扇和水泵等负载要求高保护水平的应用，其设计灵活，并嵌入了SVC和 VF控制。可广泛应用于对速度控制精度、转矩响应速度、低频输出特性要求较高的应用场合。<br/>
+广泛应用于对速度控制精度、转矩响应速度、低频输出特性要求较高的应用场合。</p>
+<p>本用户手册详细介绍了FR500系列矢量控制变频器的产品特点、结构特点、参数设置、运行调试、维护和检查。使用前，请仔细阅读本手册中的安全注意事项，并在确保人身和设备安全的同时使用本产品。<br/>
+护和检查。使用前，请仔细阅读本手册中的安全注意事项，并在确保人身和设备安全的同时使用本产</p>
+<p>#【技术与作业规程记录表】 第 1 项：◆为说明产品的详细信息，本手册中的图片基…</p>
+<p>重要提示: ◆为说明产品的详细信息，本手册中的图片基于拆下外壳或安全盖的产品。 使用本产品时，请务必按规定安装好外壳或覆盖物，并按照说明书内容操作。<br/>
+使用本产品时，请务必按规定安装好外壳或覆盖物，并按照说明书内容操作。</p>
+<p>#【技术与作业规程记录表】 第 2 项：◆本手册中的插图仅供参考，可能因您订购的…</p>
+<p>重要提示: ◆本手册中的插图仅供参考，可能因您订购的不同产品而异。</p>
+<p>#【技术与作业规程记录表】 第 3 项：◆本公司致力于产品的不断改进，产品功能将…</p>
+<p>重要提示: ◆本公司致力于产品的不断改进，产品功能将不断升级，所提供的信息如有更改，恕不另行通知。<br/>
+◆使用时如有疑问，请联系我们的区域代理商或我们的客户服务中心：（+86-0755-88605930）</p>
+<p>#【技术与作业规程记录表】 第 4 项：◆使用时如有疑问，请联系我们的区域代理商…</p>
+<p>重要提示: ◆使用时如有疑问，请联系我们的区域代理商或我们的客户服务中心：(+86-0755-88605930) ◆有关其他产品，请访问我们的网站。http://www。frecon.com.cn</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0168_FR580用户手册_中文_V1.4_20260506.pdf》【前言】记载，以及《孚瑞肯产品汇总（标准版）2026Q2C (2).pdf》【FRECON】章节中电气驱动产品汇总表记载，FR580 相关信息如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>参考资料记载</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>防护等级</td>
+<td><strong>IP65</strong></td>
+<td>《31.05.0168_FR580用户手册_中文_V1.4_20260506.pdf》【前言】明确记载：“FR580系列是一款高防护矢量控制变频器，防护等级为IP65”；《孚瑞肯产品汇总（标准版）2026Q2C (2).pdf》【FRECON】章节电气驱动产品表中也列示 FR580 防护等级为 <strong>IP65</strong>。</td>
+</tr>
+<tr>
+<td>冷却方式</td>
+<td><strong>抱歉，当前知识库参考资料中未收录此相关内容。</strong></td>
+<td>参考资料中未明确记载 FR580 的冷却方式。</td>
+</tr>
+<tr>
+<td>安装方式</td>
+<td><strong>抱歉，当前知识库参考资料中未收录此相关内容。</strong></td>
+<td>参考资料中仅出现《FR580用户手册》目录条目：“第2章：安装和接线”“2.1 安装环境要求”“2.2 安装方法”“2.6 尺寸图”，但未提供具体安装方式正文内容。</td>
+</tr>
+<tr>
+<td>可安装位置</td>
+<td><strong>抱歉，当前知识库参考资料中未收录此相关内容。</strong></td>
+<td>参考资料中未明确记载 FR580 的可安装位置。</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>FR580 之前没查过，我从知识库检索它的防护等级、冷却方式、安装方式和可安装位置。
+已查到，知识库里有 FR580 的明确规格（来源：《31.05.0168_FR580用户手册_中文_V1.4_20260506.pdf》第二章 安装环境要求、技术规格表）。FR580 是<strong>高防护矢量控制变频器</strong>，四项参数如下。</p>
+<p><strong>FR580 的防护等级、冷却方式、安装方式、可安装位置——</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>防护等级</strong></td>
+<td><strong>IP65</strong>（高防护，可防粉尘和喷水）</td>
+</tr>
+<tr>
+<td><strong>冷却方式</strong></td>
+<td><strong>自然冷却</strong>（无风扇，靠机身散热）</td>
+</tr>
+<tr>
+<td><strong>安装方式</strong></td>
+<td><strong>壁挂式 或 DIN 导轨安装</strong></td>
+</tr>
+<tr>
+<td><strong>可安装位置</strong></td>
+<td>见下方说明</td>
+</tr>
+</tbody>
+</table>
+<h2>可安装位置详解</h2>
+<p><strong>✅ 允许安装的位置</strong></p>
+<ul>
+<li><strong>室内</strong>：无阳光直射、无灰尘、无腐蚀性气体/易燃气体/油雾/水蒸气/盐分；通风良好、易于观察维护、足够坚固能长期承重；远离窗户（防直接雷击）；不装在生活区（运行有噪音）。</li>
+<li><strong>室外</strong>：因防护等级 <strong>IP65</strong>，手册明确"可安装在室外"，但应尽量装在<strong>屋檐下或其他阴凉处</strong>，避免阳光直射和雨雪直淋。</li>
+</ul>
+<p><strong>❌ 禁止安装的位置</strong></p>
+<ul>
+<li>易燃易爆场所、有爆炸危险的地方、可能遭雷击处、盐雾较多处。</li>
+<li><strong>密闭箱内</strong>（自然冷却机型必须通风，装密闭箱会无法正常工作）。</li>
+<li>环境温度超出工作范围（工作 −10℃~40℃，存储 −20℃~+70℃）、湿度 &gt;95% 凝露、振动 &gt;5.9m/s² 的地点。</li>
+</ul>
+<h2>一个关键点（区别于你之前查的机型）</h2>
+<p>FR580 是 <strong>IP65 + 自然冷却</strong>，这与前面查的 IF150（IP20、强迫风冷）、FR150A（IP20、强迫风冷）、FR600 都不一样。正因为是<strong>自然冷却无风扇</strong>，它对安装通风的要求更严格——必须保证周围有足够散热空间、绝不能塞进密闭柜体，否则会过热。这也是高防护机型"防尘防水但靠自然散热"的典型权衡。</p>
+<p>需要我把 FR580 全系列（2S/4T、0.4kW~110kW）的尺寸重量表，或它的端子定义/功能码整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>第二轮 IP65 表达清楚些，但其余项目仍漏答。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：正确</strong>首次网站回答错误，重测只答出部分条件。WorkBuddy 同时覆盖 IP65、自然冷却、壁挂/DIN 导轨及室内外安装限制，能直接回应四项问题。</div></section>
+<section class="question" id="q29">
+<div class="question-heading">
+<div><span class="number">Q29</span><h2>FR500/FR510的额定输入电压和允许偏差是多少？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>三相 380V，允许范围 -15%~+30%；额定输入频率 50Hz/60Hz，波动范围 ±5%。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《FR500&amp;510系列宣传彩页CN 202604 V2.0.pdf》第1页【技术与作业规程记录表】第 2 项“功率输入 - 额定输入电压(V)”记载，以及《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第二章【2.2 产品额定值】记载：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>参数内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>适用系列</td>
+<td>FR500 / FR510</td>
+</tr>
+<tr>
+<td>额定输入电压</td>
+<td>三相 380V</td>
+</tr>
+<tr>
+<td>允许偏差 / 电压范围</td>
+<td>-15% ～ +30%</td>
+</tr>
+</tbody>
+</table>
+<p>补充说明：根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第二章【2.2 产品额定值】中的型号说明，FR510 系列型号只需将 FR500 替换为 FR510 即可，因此上述额定输入电压及允许偏差同样适用于 FR510 系列。</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第二章【产品信息】中“表 2-3 产品技术规格”的“功率输入”项记载：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>额定输入电压（V）</td>
+<td>三相 380 V（-15%～+30%）</td>
+</tr>
+</tbody>
+</table>
+<p>因此，FR500/FR510 的额定输入电压为 <strong>三相 380 V</strong>，允许偏差范围为 <strong>-15%～+30%</strong>。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>FR500/FR510 之前查过，但额定输入电压偏差我想从手册里再精确核对一下（尤其 2S 单相版的偏差），直接用知识库原文确认。
+已核对知识库原文（来源：《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第二章 表 2-3 产品技术规格 + 型号命名规则；以及《FR500&amp;510系列宣传彩页》）。FR500 与 FR510 <strong>共用同一份技术规格</strong>，额定输入电压和允许偏差一致。</p>
+<p><strong>FR500 / FR510 的额定输入电压与允许偏差——</strong></p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>额定输入电压</th>
+<th>允许偏差</th>
+<th>实际电压范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>4T（三相 380V）</strong></td>
+<td>三相 380 V</td>
+<td><strong>−15% ～ +30%</strong></td>
+<td>323 V ～ 494 V</td>
+</tr>
+<tr>
+<td><strong>2S（单相 220V）</strong></td>
+<td>单相 220 V</td>
+<td><strong>−15% ～ +30%</strong></td>
+<td>187 V ～ 286 V</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>额定输入频率</strong>：50 Hz / 60 Hz，波动范围 <strong>±5%</strong>。</li>
+<li>主规格表（表 2-3）明确写的是"三相 380 V（−15%～+30%）"；型号命名规则里也注明 <code>2: 220V(−15%~+30%)</code>、<code>4: 380V(−15%~+30%)</code>，即<strong>单相版和三相版的偏差幅度相同，都是 ±30% 上限</strong>。</li>
+</ul>
+<h2>一个补充（宽电压版）</h2>
+<p>宣传彩页对 FR500/FR510 标注为"<strong>额定电压三相 380–480 V</strong>"，允许波动范围 <strong>323–528 V</strong>。这比主手册的 380V±30%（到 494V）更宽——是因为该系列有 380–480V 宽电压机型，上限按 480V 的 +10% 取到 528V。选型时以<strong>机型铭牌和对应手册的精确值</strong>为准。</p>
+<h2>横向对照（FR 家族差异，避免混淆）</h2>
+<ul>
+<li><strong>FR500/FR510</strong>：三相 380V，<strong>−15%~+30%</strong>（上限最宽 +30%）。</li>
+<li><strong>FR580</strong>：三相 380V −15%~+30%、单相 220V <strong>−15%~+20%</strong>（单相上限更严）。</li>
+<li><strong>FR600（中压）</strong>：5T 550V / 6T 690V，<strong>−15%~+10%</strong>（中压器件耐压余量小，上限仅 +10%）。</li>
+<li><strong>FR150A / HS580</strong>：三相 380V，FR150A 是 −15%~+30%，HS580 液压伺服标注 −15%~+20%。</li>
+</ul>
+<p>需要我把 FR500/FR510 全系列（0.7~1120kW）的"输入电压 / 输入电流 / 输出电流 / 适配功率"对照表整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>两轮均答三相 380V、−15%～+30%。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确</strong>两轮网站回答均给出题目所需的三相 380V、−15%～+30%。WorkBuddy 增加 2S 单相版与宣传彩页宽压版本；这些属于不同机型或资料口径，不能合并成所有 FR500/FR510 机型的统一输入范围。</div></section>
+<section class="question" id="q30">
+<div class="question-heading">
+<div><span class="number">Q30</span><h2>HS580的最高输出电压、载波频率和过载能力？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>最高输出电压三相 380V~480V；载波频率 1.0-12kHz（可根据负载特性自动调整）；过载能力 150% 额定电流 60s；额定电压/频率 AC 三相 380V~480V、50/60Hz；电压允许波动范围 -15%~10%，实际允许范围 AC323V~528V。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0120_HS580液压伺服驱动器手册_中文_V1.4_20260814.pdf》第一章产品信息【1.3 HS580 伺服驱动器相关参数表】之【1.3.2 产品技术参数】记载，HS580 的相关参数如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>最高输出电压</td>
+<td>三相 380V～480V</td>
+</tr>
+<tr>
+<td>载波频率</td>
+<td>1.0-12kHz（可根据负载特性，自动调整载波频率）</td>
+</tr>
+<tr>
+<td>过载能力</td>
+<td>150%额定电流 60s</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0120_HS580液压伺服驱动器手册_中文_V1.4_20260814.pdf》第一章【产品信息】中的规格表记载，HS580 的相关参数如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>最高输出电压</td>
+<td>三相 380V～480V</td>
+</tr>
+<tr>
+<td>载波频率</td>
+<td>1.0-12kHz（可根据负载特性，自动调整载波频率）</td>
+</tr>
+<tr>
+<td>过载能力</td>
+<td>150%额定电流 60s</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这些参数在之前查 HS580 时已取到的手册技术规格里都有（来源：《31.05.0120_HS580液压伺服驱动器手册_中文_V1.4_20260814.pdf》第一章 产品技术规格）。HS580 是<strong>液压伺服驱动器</strong>，这三项如下。</p>
+<p><strong>HS580 的最高输出电压、载波频率、过载能力——</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>最高输出电压</strong></td>
+<td><strong>三相 380 V ～ 480 V</strong></td>
+</tr>
+<tr>
+<td><strong>载波频率</strong></td>
+<td><strong>1.0 kHz ～ 12 kHz</strong>（可根据负载特性自动调整载波频率）</td>
+</tr>
+<tr>
+<td><strong>过载能力</strong></td>
+<td><strong>150% 额定电流 60 s</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>说明</h2>
+<ul>
+<li><strong>最高输出电压</strong>：与额定输入电压联动，输出最高可达三相 480V（即"0～额定输入电压"），适配三相 380V 电网（允许波动 −15%～+20%）。</li>
+<li><strong>载波频率</strong>：1.0~12kHz 范围，且驱动器会<strong>按负载特性自动调整</strong>载波频率——这是 HS580 相对普通变频器的一个智能点，无需手动频繁设定。</li>
+<li><strong>过载能力</strong>：只有 <strong>150% / 60s</strong> 这一档。注意这跟前面查的普通变频器（如 FR500/FR510、FR150A、REK10、IF150 的 150%/180%/200% 三档）<strong>不一样</strong>——伺服驱动器通常只标"150% 额定电流 60s"这一核心过载指标，不另列 10s/1s 的瞬时过载档。</li>
+</ul>
+<p>横向对照一下，方便你把握：</p>
+<ul>
+<li>FR 系列变频器（FR500/510、FR150A、REK10、IF150、FR580）：过载多为 <strong>150%/180%/200%（60s/10s/1s）</strong>。</li>
+<li><strong>HS580 液压伺服</strong>：<strong>150% / 60s</strong> 单档。</li>
+<li>两者最高输出频率也不同：HS580 为 <strong>600Hz</strong>，普通 FR 系列多为 590~600Hz。</li>
+</ul>
+<p>需要我把 HS580 全系列（7.5B~315）的"额定输出电流 / 适配流量 / 适配压力"对照表，或它的安装尺寸表整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>三项参数均答出。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，附带冲突</strong>三份回答都给出题目所需的 380～480V、1.0～12kHz 和 150%/60s。WorkBuddy 另称输入允许波动 −15%～+20%，而同手册 1.3.2 技术规格写 −15%～+10%；须把不同表格口径并列说明，不能直接合并。</div></section>
+<section class="question" id="q31">
+<div class="question-heading">
+<div><span class="number">Q31</span><h2>FR600有哪些输入输出端子？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>输入端子：7 路开关量输入（其中1路可作高速脉冲输入，兼容有源开路集电极NPN、PNP及干接点），3 路模拟量输入（2路0~10V/0~20mA电压电流可选，1路支持-10~+10V）。输出端子：2 路开关量输出（其中1路支持最大100kHz高速脉冲输出）、2 路继电器输出、2 路模拟量输出（电压电流可选，可实现设定频率、输出频率等物理量输出）。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第二章产品信息【2.3 产品技术规格】、第六章参数说明【F05组 开关量输出端子组】（含后续 F06/F07 参数内容）、第三章安装及配线【4）继电器输出端子配线说明、5) 信号切换拨动开关功能说明】以及【技术与作业规程记录表】中 F04.14～F04.20 等条目记载，FR600 系列中压变频器的输入输出端子可归纳如下。</p>
+<p>说明：当前资料明确给出了端子总路数、部分端子名称及对应功能码；但<strong>未逐一列出全部 7 路开关量输入端子的完整端子名称</strong>。以下仅按原文已记载内容列出。</p>
+<h2>一、结论摘要：FR600 输入输出端子配置</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>端子/名称</th>
+<th>数量/规格</th>
+<th>关键说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开关量输入</td>
+<td>7 路开关量输入端子</td>
+<td>7 路</td>
+<td>其中 1 路可作高速脉冲输入；可兼容有源开路集电极 NPN、PNP 及干接点输入方式</td>
+</tr>
+<tr>
+<td>高速脉冲输入</td>
+<td>DI7/HI</td>
+<td>1 路</td>
+<td>作为高速脉冲输入时需设定 F00.09=1；频率范围 0.00~100.00kHz</td>
+</tr>
+<tr>
+<td>模拟量输入</td>
+<td>AI1、AI2、AI3</td>
+<td>3 路</td>
+<td>其中 2 路 0～10V/0～20mA 电压电流可选，1 路支持 -10～+10V 输入</td>
+</tr>
+<tr>
+<td>键盘电位器输入</td>
+<td>内部键盘电位器</td>
+<td>内部 0~5V</td>
+<td>0V 对应 0%，5V 对应 100%</td>
+</tr>
+<tr>
+<td>开关量输出</td>
+<td>Y1、Y2</td>
+<td>2 路</td>
+<td>其中 1 路支持最大 100kHz 高速脉冲输出；Y2/HO 可作高速脉冲输出</td>
+</tr>
+<tr>
+<td>继电器输出</td>
+<td>R1、R2</td>
+<td>2 组</td>
+<td>可编程继电器干接点输出；R1 触点为 R1A/R1B/R1C，R2 触点为 R2A/R2B/R2C</td>
+</tr>
+<tr>
+<td>模拟量输出</td>
+<td>A01、A02（拨动开关表中称 AO1、AO2）</td>
+<td>2 路</td>
+<td>电压电流可选，可实现设定频率、输出频率等物理量的输出</td>
+</tr>
+<tr>
+<td>高速脉冲输出</td>
+<td>Y2/HO</td>
+<td>1 路</td>
+<td>输出脉冲范围为 0.01kHz～F07.09；F07.09 可在 0.01～100.00kHz 之间设置</td>
+</tr>
+<tr>
+<td>通讯相关拨动开关</td>
+<td>RS485 终端电阻选择</td>
+<td>拨动开关</td>
+<td>ON 为有 120Ω 终端电阻，OFF 为无终端电阻；出厂为无终端电阻</td>
+</tr>
+</tbody>
+</table>
+<h2>二、输入端子</h2>
+<h3>1. 开关量输入端子</h3>
+<p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第二章产品信息【2.3 产品技术规格】记载：</p>
+<ul>
+<li><strong>输入端子</strong>：7 路开关量输入端子，其中 1 路可作高速脉冲输入。</li>
+<li><strong>兼容输入方式</strong>：可兼容有源开路集电极 NPN、PNP 及干接点输入方式。</li>
+</ul>
+<p>根据【技术与作业规程记录表】及第六章参数说明中 F04/F06 相关条目，资料中明确出现的开关量输入相关端子或端子功能包括：</p>
+<table>
+<thead>
+<tr>
+<th>端子/功能</th>
+<th>功能码</th>
+<th>原文记载内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>端子 DI6～AI3 正反逻辑</td>
+<td>F04.14</td>
+<td>0：正逻辑闭合有效/断开无效；1：反逻辑闭合无效/断开有效</td>
+</tr>
+<tr>
+<td>FWD/REV 端子控制模式选择</td>
+<td>F04.15</td>
+<td>0：两线模式 1（FWD 正转 REV 反转）；1：两线模式 2（FWD 运行 REV 正反转）；2：三线模式1；3：三线模式2；4：脉冲运行停车</td>
+</tr>
+<tr>
+<td>键盘、端子 UP/DOWN 频率调节控制</td>
+<td>F04.16</td>
+<td>资料中记载为键盘、端子 UP/DOWN 频率调节控制相关功能码</td>
+</tr>
+<tr>
+<td>UP/DOWN 频率速率</td>
+<td>F04.17</td>
+<td>范围：0.00~50.00Hz，0.00 无效；出厂值：1.00Hz/200ms</td>
+</tr>
+<tr>
+<td>运行端子动作选择</td>
+<td>F04.18</td>
+<td>0：电平有效；1：沿触发+电平有效(上电)；2：沿触发+电平有效(每次运行)</td>
+</tr>
+<tr>
+<td>端子 DI1 无效延迟时间</td>
+<td>F04.19</td>
+<td>范围：0.0~300.0s；出厂值：0.0s</td>
+</tr>
+<tr>
+<td>端子 DI2 无效延迟时间</td>
+<td>F04.20</td>
+<td>范围：0.0~300.0s；出厂值：0.0s</td>
+</tr>
+<tr>
+<td>DI7/HI 高速脉冲输入</td>
+<td>F00.09、F06.32～F06.36</td>
+<td>DI7/HI 作为高速脉冲输入端子时，需设定 F00.09=1；高速脉冲输入频率范围为 0.00~100.00kHz</td>
+</tr>
+</tbody>
+</table>
+<p>其中，DI7/HI 高速脉冲输入相关参数原文记载如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F06.32</td>
+<td>HI 最小输入</td>
+<td>0.00kHz~HI 最大输入</td>
+<td>0.00kHz</td>
+</tr>
+<tr>
+<td>F06.33</td>
+<td>HI 最小输入对应设定值</td>
+<td>-100.0~100.0%</td>
+<td>0.0%</td>
+</tr>
+<tr>
+<td>F06.34</td>
+<td>HI 最大输入</td>
+<td>HI 最小输入～100.00kHz</td>
+<td>100.00kHz</td>
+</tr>
+<tr>
+<td>F06.35</td>
+<td>HI 最大输入对应设定值</td>
+<td>-100.0~100.0%</td>
+<td>100.0%</td>
+</tr>
+<tr>
+<td>F06.36</td>
+<td>HI 滤波时间</td>
+<td>0.000~10.000s</td>
+<td>0.100s</td>
+</tr>
+</tbody>
+</table>
+<h3>2. 模拟量输入端子</h3>
+<p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第二章产品信息【2.3 产品技术规格】记载：</p>
+<ul>
+<li><strong>模拟量输入端子</strong>：3 路模拟量输入端子，其中 2 路 0～10V/0～20mA 电压电流可选，1 路支持 -10～+10V 输入。</li>
+</ul>
+<p>结合第六章参数说明中 F06 组内容，资料中明确的模拟量输入端子为：</p>
+<table>
+<thead>
+<tr>
+<th>端子</th>
+<th>输入类型/范围</th>
+<th>原文说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI1</td>
+<td>0～10V 或 0～20mA 可选</td>
+<td>AI1 可通过控制板上的跳线选择 0～10V 电压输入，或 0～20mA 电流输入。如选择 0~10V 电压输入：0V 对应为 0%，10V 对应为 100%；如选择 0～20mA 电流输入：0mA 对应为 0%，20mA 对应为 100%</td>
+</tr>
+<tr>
+<td>AI2</td>
+<td>0～10V 或 0～20mA 可选</td>
+<td>信号切换拨动开关表中记载：AI2，I 为电流输入（0～20mA），V 为电压输入（0～10V），出厂设定 0～10V</td>
+</tr>
+<tr>
+<td>AI3</td>
+<td>-10V～10V</td>
+<td>AI3 只支持 -10V～10V 输入；对于 AI3，-10V 对应为 -100%，10V 对应为 100%</td>
+</tr>
+</tbody>
+</table>
+<p>模拟量输入滤波时间原文记载如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F06.28</td>
+<td>AI1 滤波时间</td>
+<td>0.000～10.000s</td>
+<td>0.100s</td>
+</tr>
+<tr>
+<td>F06.29</td>
+<td>AI2 滤波时间</td>
+<td>0.000～10.000s</td>
+<td>0.100s</td>
+</tr>
+<tr>
+<td>F06.30</td>
+<td>AI3 滤波时间</td>
+<td>0.000～10.000s</td>
+<td>0.100s</td>
+</tr>
+<tr>
+<td>F06.31</td>
+<td>键盘电位器滤波时间</td>
+<td>0.000~10.000s</td>
+<td>0.100s</td>
+</tr>
+</tbody>
+</table>
+<h3>3. 键盘电位器输入</h3>
+<p>根据第六章参数说明中 F06 组内容记载：</p>
+<ul>
+<li>键盘电位器是变频器内部提供 0~5V 电压输入。</li>
+<li>0V 对应为 0%，5V 对应为 100%。</li>
+<li>键盘电位器曲线为直线。</li>
+</ul>
+<p>相关功能码包括：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F06.24</td>
+<td>键盘电位器曲线最小输入</td>
+<td>0.0～键盘电位器曲线最大输入</td>
+<td>0.0%</td>
+</tr>
+<tr>
+<td>F06.25</td>
+<td>键盘电位器曲线最小输入对应设定</td>
+<td>-100.0~100.0%</td>
+<td>0.0%</td>
+</tr>
+<tr>
+<td>F06.26</td>
+<td>键盘电位器曲线最大输入</td>
+<td>键盘电位器曲线最小输入~100.0%</td>
+<td>100.0%</td>
+</tr>
+<tr>
+<td>F06.27</td>
+<td>键盘电位器曲线最大输入对应设定</td>
+<td>-100.0~100.0%</td>
+<td>100.0%</td>
+</tr>
+<tr>
+<td>F06.31</td>
+<td>键盘电位器滤波时间</td>
+<td>0.000~10.000s</td>
+<td>0.100s</td>
+</tr>
+</tbody>
+</table>
+<h2>三、输出端子</h2>
+<h3>1. 开关量输出端子：Y1、Y2</h3>
+<p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第二章产品信息【2.3 产品技术规格】记载：</p>
+<ul>
+<li><strong>开关量输出端子</strong>：2 路开关量输出端子，其中 1 路支持最大 100kHz 高速脉冲输出。</li>
+</ul>
+<p>根据第六章参数说明【F05组 开关量输出端子组】记载，开关量输出端子为 Y1、Y2，功能选择功能码如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F05.00</td>
+<td>Y1 输出功能选择</td>
+<td>0~99</td>
+<td>1</td>
+</tr>
+<tr>
+<td>F05.01</td>
+<td>Y2 输出功能选择</td>
+<td>0~99</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>Y1、Y2 输出延迟时间原文记载如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F05.04</td>
+<td>Y1 输出延迟时间</td>
+<td>0.0~6000.0s</td>
+<td>0.0s</td>
+</tr>
+<tr>
+<td>F05.05</td>
+<td>Y2 输出延迟时间</td>
+<td>0.0~6000.0s</td>
+<td>0.0s</td>
+</tr>
+</tbody>
+</table>
+<p>Y1、Y2 及继电器 R1、R2 的有效状态由 F05.08 设定。原文记载：</p>
+<ul>
+<li><strong>F05.08 开关量输出有效状态设定</strong>：范围 0000~1111，出厂值 0000。</li>
+<li>个位：Y1
+<ul>
+<li>0：正逻辑，Y1 和 COM 连通(0V)为有效状态，断开(24V)为无效状态；</li>
+<li>1：反逻辑，Y1 和 COM 连通(0V)为无效状态，断开(24V)为有效状态；</li>
+</ul>
+</li>
+<li>十位：Y2（同 Y1）</li>
+<li>百位：继电器 1 输出
+<ul>
+<li>0：正逻辑，继电器线圈得电为有效状态，未得电为无效状态；</li>
+<li>1：反逻辑，继电器线圈得电为无效状态，未得电为有效状态；</li>
+</ul>
+</li>
+<li>千位：继电器 2 输出（同继电器 1）</li>
+</ul>
+<p>Y1 控制外部继电器接线示意图原文如下：</p>
+<p>图 6-13 Y1 控制外部继电器示意图</p>
+<h3>2. Y1/Y2/R1/R2 可选输出功能</h3>
+<p>根据第六章参数说明【F05组 开关量输出端子组】记载，F05.00～F05.03 用于定义开关量输出端子 Y1、Y2 和继电器 R1、R2 的功能。输出端子功能选择如下：</p>
+<table>
+<thead>
+<tr>
+<th>设定值</th>
+<th>功能</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>无输出</td>
+<td>输出端子无任何功能</td>
+</tr>
+<tr>
+<td>1</td>
+<td>变频器运行中</td>
+<td>变频器处于运行状态时输出为 ON，停机状态时输出 OFF</td>
+</tr>
+<tr>
+<td>2</td>
+<td>变频器故障</td>
+<td>变频器出现故障，则输出 ON 信号</td>
+</tr>
+<tr>
+<td>3</td>
+<td>频率水平检测（FDT1）</td>
+<td>请参考功能码 F05.10、F05.11 的说明</td>
+</tr>
+<tr>
+<td>4</td>
+<td>频率水平检测（FDT2）</td>
+<td>请参考功能码 F05.12、F05.13 的说明</td>
+</tr>
+<tr>
+<td>5</td>
+<td>零速运行中1（停机不输出）</td>
+<td>变频器运行且输出频率为 0 时，输出 ON 信号。在负责该信号为 OFF</td>
+</tr>
+<tr>
+<td>6</td>
+<td>零速运行中2（停机也输出）</td>
+<td>变频器输出频率为 0 时，输出 ON 信号。停机状态下该信号也为 ON</td>
+</tr>
+<tr>
+<td>7</td>
+<td>频率到达上限</td>
+<td>当运行频率到达上限频率时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>8</td>
+<td>频率到达下限（停机不输出）</td>
+<td>当运行频率到达下限频率时，输出 ON 信号。停机状态下该信号为 OFF</td>
+</tr>
+<tr>
+<td>9</td>
+<td>频率到达</td>
+<td>请参考功能码 F05.09 的说明</td>
+</tr>
+<tr>
+<td>10</td>
+<td>运行准备就绪</td>
+<td>当变频器主回路和控制回路电源已经稳定，且变频器未检测到任何故障信息，变频器处于可运行状态时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>11</td>
+<td>过载预警</td>
+<td>变频器输出电流超过 F11.19（过载预报警检出水平），并且持续时间大于 F11.20（过载预报警检出时间），输出 ON 信号</td>
+</tr>
+<tr>
+<td>12</td>
+<td>过热预警</td>
+<td>变频器机内检测温度超过 F11.21（变频器过热预报警温度）时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>13</td>
+<td>本次运行时间到达</td>
+<td>变频器连续运行时间到达 F05.14 的设定值时，输出 ON 信号。停机时连续运行时间清零</td>
+</tr>
+<tr>
+<td>14</td>
+<td>累计上电时间到达</td>
+<td>变频器累计上电时间（U00.24）超过 F05.15 所设定时间时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>15</td>
+<td>累计运行时间到达</td>
+<td>变频器累计运行时间（U00.25）超过 F05.16 所设定时间时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>16</td>
+<td>PLC 循环完成</td>
+<td>简易 PLC 完成一个运行循环后，输出 ON 信号，ON 信号宽度 250ms</td>
+</tr>
+<tr>
+<td>17</td>
+<td>设定计数值到达</td>
+<td>当计数值达到 F14.07 所设定的值时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>18</td>
+<td>指定计数值到达</td>
+<td>当计数值达到 F14.08 所设定的值时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>19</td>
+<td>长度到达</td>
+<td>当检测的实际长度超过 F14.04 所设定的长度时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>20</td>
+<td>欠载预警</td>
+<td>当变频器欠载时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>21</td>
+<td>抱闸输出</td>
+<td>当抱闸功能选择有效并且达到抱闸打开条件时，输出 ON 信号</td>
+</tr>
+<tr>
+<td>22</td>
+<td>DI1</td>
+<td>输出 DI1 状态</td>
+</tr>
+<tr>
+<td>23</td>
+<td>DI2</td>
+<td>输出 DI2 状态</td>
+</tr>
+<tr>
+<td>24</td>
+<td>频率区域到达(FDT1 上下限范围内)</td>
+<td>当频率运行到达 FDT1 上下限范围内时，端子输出有效</td>
+</tr>
+</tbody>
+</table>
+<h3>3. 高速脉冲输出端子：Y2/HO</h3>
+<p>根据第六章参数说明中 F07 组内容记载：</p>
+<ul>
+<li><strong>Y2/HO 端子</strong>作为高速脉冲输出 HO 使用时，输出脉冲范围为 <strong>0.01kHz～F07.09</strong>。</li>
+<li><strong>F07.09</strong> 可以在 <strong>0.01～100.00kHz</strong> 之间设置。</li>
+</ul>
+<p>相关功能码原文记载如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F07.02</td>
+<td>HO 输出功能选择</td>
+<td>0~99</td>
+<td>1</td>
+</tr>
+<tr>
+<td>F07.09</td>
+<td>HO 输出最大频率</td>
+<td>0.01~100.00kHz</td>
+<td>50.00kHz</td>
+</tr>
+<tr>
+<td>F07.10</td>
+<td>HO 输出滤波时间</td>
+<td>0.000~10.000s</td>
+<td>0.010s</td>
+</tr>
+</tbody>
+</table>
+<p>原文说明：</p>
+<ul>
+<li>设定 HO 高速脉冲输出的滤波时间，滤波能够改变输出脉冲频率的变化速率。</li>
+<li>滤波时间越长，输出脉冲频率的变化速率越缓慢。</li>
+</ul>
+<h3>4. 继电器输出端子：R1、R2</h3>
+<p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第三章安装及配线【4）继电器输出端子配线说明】记载：</p>
+<ul>
+<li>FR600 系列变频器控制板有 <strong>2 组可编程继电器干接点输出</strong>。</li>
+<li>第 1 组继电器触点为 <strong>R1A/R1B/R1C</strong>，其功能定义见功能码 <strong>F05.02</strong>。</li>
+<li>第 2 组继电器触点为 <strong>R2A/R2B/R2C</strong>，其功能定义见功能码 <strong>F05.03</strong>。</li>
+</ul>
+<p>原文对触点状态的描述为：</p>
+<ul>
+<li>第 1 组继电器触点为 R1A/R1B/R1C，其中 R1A 和 R1C 为常开触点，R1B 和 R1C 为常闭触点。</li>
+<li>第 2 组继电器触点为 R2A/R2B/R2C，其中 R2A 和 R2C 为常开触点，R2B 和 R2C 为常闭触点。</li>
+</ul>
+<p>继电器输出功能选择功能码如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F05.02</td>
+<td>继电器 R1 输出功能选择</td>
+<td>0~99</td>
+<td>2</td>
+</tr>
+<tr>
+<td>F05.03</td>
+<td>继电器 R2 输出功能选择</td>
+<td>0~99</td>
+<td>11</td>
+</tr>
+</tbody>
+</table>
+<p>继电器输出延迟时间原文记载如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F05.06</td>
+<td>R1 输出延迟时间</td>
+<td>0.0~6000.0s</td>
+<td>0.0s</td>
+</tr>
+<tr>
+<td>F05.07</td>
+<td>R2 输出延迟时间</td>
+<td>0.0~6000.0s</td>
+<td>0.0s</td>
+</tr>
+</tbody>
+</table>
+<p>原文注意事项：</p>
+<p>若驱动感性负载（如电磁继电器或接触器），则应加装浪涌电压吸收电路，如 RC 吸收电路（注意其漏电流应小于所控制接触器或继电器的保持电流）、压敏电阻或续流二极管等（用于直流电磁回路，安装时一定要注意极性）。吸收电路元件要就近安装在继电器或接触器的线圈两端。</p>
+<h3>5. 模拟量输出端子：A01、A02</h3>
+<p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第二章产品信息【2.3 产品技术规格】记载：</p>
+<ul>
+<li><strong>模拟量输出端子</strong>：2 路模拟量输出端子，且电压电流可选，可实现设定频率、输出频率等物理量的输出。</li>
+</ul>
+<p>根据第六章参数说明中 F07 组内容记载：</p>
+<ul>
+<li><strong>A01 和 A02 为模拟输出端子</strong>。</li>
+<li>可通过控制板上的拨动开关 A01 和 A02 来选择电压 0～10V 输出或电流 0~20mA 输出。</li>
+<li>在第三章安装及配线【5) 信号切换拨动开关功能说明】表格中，对应拨动开关名称为 <strong>AO1、AO2</strong>。</li>
+</ul>
+<p>模拟量输出功能选择功能码如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F07.00</td>
+<td>A01 输出功能选择</td>
+<td>0~99</td>
+<td>1</td>
+</tr>
+<tr>
+<td>F07.01</td>
+<td>A02 输出功能选择</td>
+<td>0~99</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>A01/A02 零偏、增益、滤波时间原文记载如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F07.03</td>
+<td>A01 零偏</td>
+<td>-100.0~100.0%</td>
+<td>0.0%</td>
+</tr>
+<tr>
+<td>F07.04</td>
+<td>A01 增益</td>
+<td>-2.000~2.000</td>
+<td>1.000</td>
+</tr>
+<tr>
+<td>F07.05</td>
+<td>A01 滤波时间</td>
+<td>0.000~10.000s</td>
+<td>0.000s</td>
+</tr>
+<tr>
+<td>F07.06</td>
+<td>A02 零偏</td>
+<td>-100.0~100.0%</td>
+<td>0.0%</td>
+</tr>
+<tr>
+<td>F07.07</td>
+<td>A02 增益</td>
+<td>-2.000~2.000</td>
+<td>1.000</td>
+</tr>
+<tr>
+<td>F07.08</td>
+<td>A02 滤波时间</td>
+<td>0.000~10.000s</td>
+<td>0.000s</td>
+</tr>
+</tbody>
+</table>
+<p>原文说明：</p>
+<ul>
+<li>用户需要更改 A01 显示量程或校正表头误差时，可以通过调整 F07.03 零偏和 F07.04 增益的方式来实现。</li>
+<li>零偏的出厂值为 0.0%，增益出厂值为 1，此时的 A01 为标准输出，即 A01 输出 0～10V 或 0~20mA。</li>
+<li>A02 的调整方法同 A01。</li>
+</ul>
+<h2>四、信号切换拨动开关</h2>
+<p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第三章安装及配线【5) 信号切换拨动开关功能说明】记载：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>功能</th>
+<th>出厂设定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI1</td>
+<td>I 为电流输入（0～20mA），V 为电压输入（0～10V）</td>
+<td>0～10V</td>
+</tr>
+<tr>
+<td>AI2</td>
+<td>I 为电流输入（0～20mA），V 为电压输入（0～10V）</td>
+<td>0～10V</td>
+</tr>
+<tr>
+<td>AO1</td>
+<td>I 为电流输出（0～20mA），V 为电压输出（0～10V）</td>
+<td>0～10V</td>
+</tr>
+<tr>
+<td>AO2</td>
+<td>I 为电流输出（0～20mA），V 为电压输出（0～10V）</td>
+<td>0～10V</td>
+</tr>
+<tr>
+<td>RS485</td>
+<td>RS485 终端电阻选择：ON 为有 120Ω 终端电阻，OFF 为无终端电阻</td>
+<td>无终端电阻</td>
+</tr>
+</tbody>
+</table>
+<h2>五、最终端子清单</h2>
+<p>综合上述原文记载，FR600 的输入输出端子可概括为：</p>
+<h3>输入侧</h3>
+<ol>
+<li><strong>7 路开关量输入端子</strong></li>
+</ol>
+<ul>
+<li>其中 1 路可作高速脉冲输入。</li>
+<li>可兼容有源开路集电极 NPN、PNP 及干接点输入方式。</li>
+<li>资料中明确出现的相关端子/功能包括：DI1、DI2、DI6～AI3 正反逻辑、FWD/REV 端子、运行端子、UP/DOWN 频率调节端子、DI7/HI 高速脉冲输入。</li>
+</ul>
+<ol start="2">
+<li><strong>3 路模拟量输入端子</strong></li>
+</ol>
+<ul>
+<li>AI1：0～10V 或 0～20mA 可选。</li>
+<li>AI2：0～10V 或 0～20mA 可选。</li>
+<li>AI3：-10V～10V 输入。</li>
+</ul>
+<ol start="3">
+<li><strong>键盘电位器输入</strong></li>
+</ol>
+<ul>
+<li>内部提供 0~5V 电压输入。</li>
+<li>0V 对应 0%，5V 对应 100%。</li>
+</ul>
+<h3>输出侧</h3>
+<ol>
+<li><strong>2 路开关量输出端子</strong></li>
+</ol>
+<ul>
+<li>Y1</li>
+<li>Y2</li>
+<li>其中 Y2/HO 可作高速脉冲输出，最大频率由 F07.09 设定，F07.09 范围 0.01~100.00kHz，出厂值 50.00kHz。</li>
+</ul>
+<ol start="2">
+<li><strong>2 组继电器干接点输出端子</strong></li>
+</ol>
+<ul>
+<li>R1：R1A/R1B/R1C</li>
+<li>R2：R2A/R2B/R2C</li>
+</ul>
+<ol start="3">
+<li><strong>2 路模拟量输出端子</strong></li>
+</ol>
+<ul>
+<li>A01</li>
+<li>A02</li>
+<li>控制板拨动开关表中对应名称为 AO1、AO2。</li>
+<li>可选择 0～10V 电压输出或 0~20mA 电流输出。</li>
+</ul>
+<ol start="4">
+<li><strong>高速脉冲输出</strong></li>
+</ol>
+<ul>
+<li>由 Y2/HO 端子实现。</li>
+<li>输出脉冲范围为 0.01kHz～F07.09。</li>
+<li>F07.09 可在 0.01～100.00kHz 之间设置。</li>
+</ul>
+<h3>其他相关设置</h3>
+<ul>
+<li><strong>RS485 终端电阻选择拨动开关</strong>
+<ul>
+<li>ON：有 120Ω 终端电阻。</li>
+<li>OFF：无终端电阻。</li>
+<li>出厂设定：无终端电阻。</li>
+</ul>
+</li>
+</ul>
+<h2>六、资料未完整说明事项</h2>
+<p>根据当前参考资料：</p>
+<ol>
+<li><strong>未逐一列出全部 7 路开关量输入端子的完整端子名称</strong>，仅明确总路数为 7 路，并列出 DI1、DI2、DI7/HI 等部分端子或端子功能。</li>
+<li><strong>RS485 相关端子物理名称/规格未明确记载</strong>，资料中仅记载 RS485 终端电阻选择拨动开关及其出厂设定。</li>
+</ol>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》【第五章功能参数表】的参考记载：</p>
+<p>F00～F17是基本功能参数，U00组是状态监视参数，U01组是故障监视参数。</p>
+<p>功能参数表相关说明：</p>
+<p>更改属性：</p>
+<p>“△”表示该参数的设定值在变频器停机和运行状态均可更改；</p>
+<p>“×”表示该参数的设定值在变频器处于运行状态时不可更改；</p>
+<p>“”表示该参数为实际检测值，不能更改；</p>
+<p>出厂值：当进行恢复出厂参数操作时，功能码参数被刷新后的数值。但实际检测的参数值或记录值不会被刷新。</p>
+<p>范围：功能码能设定或显示的范围。</p>
+<p>以下为 FR600功能码组分布一览表：</p>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>功能码组</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系统参数</td>
+<td>F00:系统参数</td>
+</tr>
+</tbody>
+</table>
+<p>F01:频率给定F02:启停控制F03:加减速时间<br/>
+F04:开关量输入端子F05:开关量输出端子F06:模拟量和脉冲输入端子F07:模拟量输出端子F22:虚拟 IO<br/>
+输入输出端子<br/>
+F08:电机 1 基本参数F09:电机 1VF 控制参数F10:电机 1 矢量控制参数</p>
+<table>
+<thead>
+<tr>
+<th>基本参数</th>
+<th>F01:频率给定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基本参数</td>
+<td>F02:启停控制</td>
+</tr>
+<tr>
+<td>基本参数</td>
+<td>F03:加减速时间</td>
+</tr>
+<tr>
+<td>输入输出端子</td>
+<td>F04:开关量输入端子</td>
+</tr>
+<tr>
+<td>输入输出端子</td>
+<td>F05:开关量输出端子</td>
+</tr>
+<tr>
+<td>输入输出端子</td>
+<td>F06:模拟量和脉冲输入端子</td>
+</tr>
+<tr>
+<td>输入输出端子</td>
+<td>F07:模拟量输出端子</td>
+</tr>
+<tr>
+<td>输入输出端子</td>
+<td>F22: 虚拟 I0</td>
+</tr>
+<tr>
+<td>电机1参数</td>
+<td>F08：电机1 基本参数</td>
+</tr>
+<tr>
+<td>电机1参数</td>
+<td>F09：电机 1VF 控制参数</td>
+</tr>
+<tr>
+<td>电机1参数</td>
+<td>F10:电机1矢量控制参数</td>
+</tr>
+<tr>
+<td>故障与保护</td>
+<td>F11:故障与保护功能</td>
+</tr>
+<tr>
+<td>应用参数</td>
+<td>F12:多段速和简易 PLC</td>
+</tr>
+<tr>
+<td>应用参数</td>
+<td>F13:过程 PID</td>
+</tr>
+<tr>
+<td>应用参数</td>
+<td>F14:摆频、定长、计数及唤醒</td>
+</tr>
+<tr>
+<td>通讯参数</td>
+<td>F15:通讯参数</td>
+</tr>
+<tr>
+<td>操作键盘</td>
+<td>F16:操作键盘</td>
+</tr>
+<tr>
+<td>用户功能码</td>
+<td>F17:用户功能码</td>
+</tr>
+<tr>
+<td>监视参数</td>
+<td>U00:状态监视功能组</td>
+</tr>
+<tr>
+<td>监视参数</td>
+<td>U01:故障监视功能组</td>
+</tr>
+</tbody>
+</table>
+<p>表 5-1 基本功能参数简表</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>说明</th>
+<th>缺省值 属&lt;br&gt;性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F00 组:系统参数&lt;br&gt;F00.00</td>
+<td>用户密码</td>
+<td>0～65535 0:显示所有功能码</td>
+<td>×</td>
+</tr>
+<tr>
+<td>F00.01</td>
+<td>功能码显示</td>
+<td>1:显示 F00.00、F00.01 和用户设定&lt;br&gt;功能码&lt;br&gt;2:显示 F00.00、F00.01 和与出厂值&lt;br&gt;不同的功能码</td>
+<td>×</td>
+</tr>
+<tr>
+<td>F00.02</td>
+<td>功能码保护</td>
+<td>0:所有功能码允许修改&lt;br&gt;1:只允许本功能码修改</td>
+<td>×</td>
+</tr>
+</tbody>
+</table>
+<p>1:恢复出厂值(不含电机参数）2: 清除故障记录信息3:备份用户当前参数4:恢复用户备份参数5:恢复出厂值（含电机参数）6:功耗清零<br/>
+F00.04 出厂值控制</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>0:无操作</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F00.05</td>
+<td>功能码拷贝</td>
+<td>1:参数上传&lt;br&gt;2:参数下传（不含电机参数）&lt;br&gt;3:参数下传（含电机参数）</td>
+<td>×</td>
+<td></td>
+</tr>
+<tr>
+<td>F00.06</td>
+<td>参数修改方式</td>
+<td>1:键盘有效&lt;br&gt;2:RS485 有效</td>
+<td>×</td>
+<td></td>
+</tr>
+<tr>
+<td>F00.08</td>
+<td>电机控制方式</td>
+<td>1:无 PG 矢量控制 1&lt;br&gt;2:无 PG 矢量控制 2</td>
+<td>×</td>
+<td></td>
+</tr>
+<tr>
+<td>F00.09</td>
+<td>DI7/HI 输入模式选择</td>
+<td>0:开关量输入（DI7)&lt;br&gt;1:高速脉冲输入（HI)</td>
+<td>×</td>
+<td></td>
+</tr>
+<tr>
+<td>F00.10</td>
+<td>AI1\AI2\AI3 输入模式选择</td>
+<td>0:模拟量输入&lt;br&gt;1:开关量输入</td>
+<td>×</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>十位:AI2(同个位）&lt;br&gt;百位:AI3(同个位）</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F00.11</td>
+<td>Y2/HO 输出模式选择</td>
+<td>0:开关量输出（Y2）&lt;br&gt;1:高速脉冲输出（HO）</td>
+<td>×</td>
+<td></td>
+</tr>
+<tr>
+<td>功能码</td>
+<td>名称</td>
+<td>说明</td>
+<td>缺省值</td>
+<td>属性</td>
+</tr>
+<tr>
+<td>F00组：系统</td>
+<td>参数</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F00.00</td>
+<td>用户密码</td>
+<td>0~65535</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.01</td>
+<td>功能码显示</td>
+<td>0:显示所有功能码</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.01</td>
+<td>功能码显示</td>
+<td>1:显示F00.00、F00.01和用户设定功能码</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.01</td>
+<td>功能码显示</td>
+<td>2:显示F00.00、F00.01 和与出厂值不同的功能码</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.02</td>
+<td>功能码保护</td>
+<td>0:所有功能码允许修改</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.02</td>
+<td>功能码保护</td>
+<td>1:只允许本功能码修改</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.04</td>
+<td>出厂值控制</td>
+<td>0:无效</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.04</td>
+<td>出厂值控制</td>
+<td>1:恢复出厂值(不含电机参数)</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.04</td>
+<td>出厂值控制</td>
+<td>2：清除故障记录信息</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.04</td>
+<td>出厂值控制</td>
+<td>3:备份用户当前参数</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.04</td>
+<td>出厂值控制</td>
+<td>4:恢复用户备份参数</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.04</td>
+<td>出厂值控制</td>
+<td>5:恢复出厂值（含电机参数）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.04</td>
+<td>出厂值控制</td>
+<td>6:功耗清零</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.05</td>
+<td>功能码拷贝</td>
+<td>0:无操作</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.05</td>
+<td>功能码拷贝</td>
+<td>1:参数上传</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.05</td>
+<td>功能码拷贝</td>
+<td>2:参数下传（不含电机参数）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.05</td>
+<td>功能码拷贝</td>
+<td>3:参数下传（含电机参数）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.06</td>
+<td>参数修改方式</td>
+<td>0:键盘、RS485同时有效</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.06</td>
+<td>参数修改方式</td>
+<td>1:键盘有效</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.06</td>
+<td>参数修改方式</td>
+<td>2:RS485 有效</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.08</td>
+<td>电机控制方式</td>
+<td>0:V/f 控制</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.08</td>
+<td>电机控制方式</td>
+<td>1:无 PG 矢量控制 1</td>
+<td>1</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>说明</th>
+<th>缺省值 属&lt;br&gt;性</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F00.08</td>
+<td>电机控制方式</td>
+<td>2:无 PG 矢量控制 2</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.09</td>
+<td>DI7/HI 输入模式选择</td>
+<td>0:开关量输入（DI7)</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.09</td>
+<td>DI7/HI 输入模式选择</td>
+<td>1:高速脉冲输入（HI)</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.10</td>
+<td>AI1\AI2\AI3 输入模式选择</td>
+<td>个位：AI10:模拟量输入1:开关量输入</td>
+<td>000</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.10</td>
+<td>AI1\AI2\AI3 输入模式选择</td>
+<td>十位：AI2(同个位)</td>
+<td>000</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.10</td>
+<td>AI1\AI2\AI3 输入模式选择</td>
+<td>百位：AI3(同个位)</td>
+<td>000</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.11</td>
+<td>Y2/HO输出模式选择</td>
+<td>0:开关量输出（Y2）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.11</td>
+<td>Y2/HO输出模式选择</td>
+<td>1:高速脉冲输出（HO）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.12</td>
+<td>PWM 优化</td>
+<td>个位：载波方式0:固定载波1:随机载波2:固定载波并随温度调整3:随机载波并随温度调整</td>
+<td>100</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+<p>0:七段式1:五段式2:五段式、七段式自动切换</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>明白，你是要我把"从知识库查 FR600 端子"这件事继续跑通。之前是知识库服务连续超时，我现在重试验证服务是否恢复了。
+知识库服务恢复了，本次检索命中了权威文档 <strong>《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》</strong>（第三章/第五章/第六章），控制回路端子已经完整返回。我再补检索一次「主回路端子」，把电源进线/电机出线/直流母线部分也补全，确保"输入输出端子"无遗漏。
+已成功从知识库（docmatrix-knowledge）取到权威内容，来源为 <strong>《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》</strong>（第三章 安装及配线、第五章/第六章 参数说明）。FR600 是 550V/690V 中压矢量控制变频器，输入输出端子分主回路与控制回路，完整清单如下。</p>
+<hr/>
+<h2>一、主回路端子（表 3-2）</h2>
+<table>
+<thead>
+<tr>
+<th>端子</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R/L1、S/L2、T/L3</td>
+<td>交流电源输入，接三相 690V 电源（<strong>无相序要求</strong>）</td>
+</tr>
+<tr>
+<td>U/T1、V/T2、W/T3</td>
+<td>变频器交流输出，接三相电机</td>
+</tr>
+<tr>
+<td>(+)、(−)</td>
+<td>内部直流母线正/负极端子</td>
+</tr>
+<tr>
+<td>PB</td>
+<td>制动电阻连接端子（一端接 +，另一端接 PB）</td>
+</tr>
+<tr>
+<td>接地端子</td>
+<td>接大地</td>
+</tr>
+</tbody>
+</table>
+<h2>二、控制回路端子</h2>
+<p><strong>电源类（供外部传感器/电位器）</strong></p>
+<table>
+<thead>
+<tr>
+<th>端子</th>
+<th>名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>+10V-GND</td>
+<td>+10V 电源</td>
+<td>外供 +10V，最大 10mA，外接电位器（1~5kΩ）</td>
+</tr>
+<tr>
+<td>+24V-COM</td>
+<td>24V 电源</td>
+<td>外供 +24V，最大 200mA，给 DI/DO 及传感器供电</td>
+</tr>
+<tr>
+<td>PLC</td>
+<td>外部电源输入</td>
+<td>默认接 +24V；用外部信号驱动 DI1~DI7 时需接外部电源并断开 +24V</td>
+</tr>
+</tbody>
+</table>
+<p><strong>模拟量输入</strong>
+| AI1-GND | 模拟量输入1 | DC 0~10V / 0~20mA，控制板 AI1 拨码选择，阻抗 250kΩ(电压)/250Ω(电流) |
+| AI2-GND | 模拟量输入2 | 同上 |
+| AI3-GND | 模拟量输入3 | DC −10~+10V，阻抗 250kΩ |</p>
+<p><strong>开关量输入</strong>
+| DI1-COM ~ DI6-COM | 开关量输入1~6 | 最高 200Hz，阻抗 2.4kΩ，电平 9~30V |
+| DI7/HI-COM | 开关量输入7 或 高速脉冲 | 兼高速脉冲输入，最高 100kHz |</p>
+<p><strong>模拟量输出</strong>
+| AO1-GND | 模拟量输出1 | DC 0~10V / 0~20mA，控制板 AO1 拨码选择，阻抗 ≥10kΩ |
+| AO2-GND | 模拟量输出2 | 同上 |</p>
+<p><strong>开关量输出</strong>
+| Y1-COM | 开路集电极输出1 | 0~24V，0~50mA |
+| Y2/HO-COM | 开路集电极输出2 或 高速脉冲 | 兼高速脉冲输出，最高 100kHz |</p>
+<p><strong>继电器输出</strong>（触点容量 AC250V 3A / DC30V 1A）
+| R1A-R1C | 常开 |
+| R1B-R1C | 常闭 |
+| R2A-R2C | 常开 |
+| R2B-R2C | 常闭 |</p>
+<p><strong>通讯与辅助接口</strong>
+| 485+ / 485− | RS485 通讯端子（4800~115200bps，MODBUS-RTU） |
+| GND（通讯） | 485 通讯屏蔽地（控制板 RS485 拨码设 120Ω 终端电阻） |
+| PE | 屏蔽接地 |
+| 外引键盘接口（RJ45） | 操作面板接口，标准网线，最长 50m |
+| UP/DOWNLOAD | 参数拷贝卡接口 |</p>
+<h2>三、补充说明（来自参数章节）</h2>
+<ul>
+<li><strong>功能码分组</strong>：F04 开关量输入端子、F05 开关量输出端子、F06 模拟量和脉冲输入端子、F07 模拟量输出端子、F22 虚拟 IO。</li>
+<li><strong>控制板信号切换拨码</strong>：AI1/AI2 选择电流(0~20mA)或电压(0~10V)输入；AO1/AO2 选择电流或电压输出；RS485 选终端电阻 ON/OFF。</li>
+<li><strong>注意</strong>：模拟量/开关量信号线需屏蔽、长度 &lt;20m；用外部电源驱动 DI 时，必须拆下 +24V 与 PLC 间的短路片，外部电源范围 DC20~30V。</li>
+</ul>
+<hr/>
+<p>需要的话，我可以把这份端子清单导成一份单独的速查表文件（Excel/PDF/Markdown），或进一步展开某一类端子的接线图与功能码定义（如 F04/F05 各组端子的功能映射）。</p>
+</div></article></div>
+<p class="note"><b>变化：</b>第二轮提到 DI7/HI、AI1～AI3、Y2/HO，但未给出完整端子数量和规格。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，接线细节待核</strong>首轮网站回答可直接用，重测漏了端子数量；WorkBuddy 把主、控制回路列得更全。但其“三相 690V”不能概括 FR600 的 5T/6T 两档，PB 与部分接线图的 P 端子也应按型号核对。</div></section>
+<section class="question" id="q32">
+<div class="question-heading">
+<div><span class="number">Q32</span><h2>变频器最多支持多少段速运行？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>通过内置 PLC 或控制端子最多实现 16 段速运行。FR500/FR510、FR600、SY380、FR530M、FR150A、IF150、IF500 等手册均列明该指标。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><pre><code class="language-text">根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》【0.00Hz:180%（有 PG 矢量控制）】的参考记载：
+
+0.00Hz:180%（有 PG 矢量控制）
+
+载波频率 0.7kHz～16kHz
+
+#【技术与作业规程记录表】 第 1 项：功率输入 - 额定输入电压(V）
+
+项目: 功率输入
+项目_2: 额定输入电压(V）
+规格: 三相 380 V(-15%~+30%)
+
+#【技术与作业规程记录表】 第 2 项：功率输入 - 额定输入电流(A)
+
+项目: 功率输入
+项目_2: 额定输入电流(A)
+规格: 见表2-1
+
+#【技术与作业规程记录表】 第 3 项：功率输入 - 额定输入频率(Hz)
+
+项目: 功率输入
+项目_2: 额定输入频率(Hz)
+规格: 50Hz/60Hz，波动范围±5%
+
+#【技术与作业规程记录表】 第 4 项：功率输出 - 标准适用电机(kW)
+
+项目: 功率输出
+项目_2: 标准适用电机(kW)
+规格: 见表2-1
+
+#【技术与作业规程记录表】 第 5 项：功率输出 - 额定输出电流(A)
+
+项目: 功率输出
+项目_2: 额定输出电流(A)
+规格: 见表2-1
+
+#【技术与作业规程记录表】 第 6 项：功率输出 - 最高输出电压（V）
+
+项目: 功率输出
+项目_2: 最高输出电压（V）
+规格: 0~额定输入电压，误差小于±3%
+
+#【技术与作业规程记录表】 第 7 项：功率输出 - 最高输出频率(Hz)
+
+项目: 功率输出
+项目_2: 最高输出频率(Hz)
+规格: 0.00~ 590.00 Hz，单位 0.01Hz
+
+#【技术与作业规程记录表】 第 8 项：控制特性 - 控制方式
+
+项目: 控制特性
+项目_2: 控制方式
+规格: V/F 控制无 PG 矢量控制 1无 PG 矢量控制 2有PG 矢量控制(仅 FR510 支持该功能)
+
+#【技术与作业规程记录表】 第 9 项：控制特性 - 调速范围
+
+项目: 控制特性
+项目_2: 调速范围
+规格: 1:50（V/F控制）1:100(无 PG 矢量控制 1)1:200(无 PG 矢量控制 2)1:1000(有 PG 矢量控制)
+
+#【技术与作业规程记录表】 第 10 项：控制特性 - 速度控制精度
+
+项目: 控制特性
+项目_2: 速度控制精度
+规格: ±0.5%(V/F控制)±0.3%(无PG矢量控制 1、2)±0.1%(有 PG矢量控制)
+
+#【技术与作业规程记录表】 第 11 项：控制特性 - 速度波动
+
+项目: 控制特性
+项目_2: 速度波动
+规格: ±0.3%(无 PG 矢量控制1、2)±0.1%(有 PG矢量控制)
+
+#【技术与作业规程记录表】 第 12 项：控制特性 - 转矩响应
+
+项目: 控制特性
+项目_2: 转矩响应
+规格: &lt;10ms(无PG矢量控制1、2)
+
+#【技术与作业规程记录表】 第 13 项：控制特性 - 起动转矩
+
+项目: 控制特性
+项目_2: 起动转矩
+规格: 0.5Hz:150%(V/F控制，无PG矢量控制1)0.25Hz:150%(无 PG 矢量控制 2)0.00Hz:180%(有 PG 矢量控制)
+
+#【技术与作业规程记录表】 第 14 项：基本功能 - 载波频率
+
+项目: 基本功能
+项目_2: 载波频率
+规格: 0.7kHz~16kHz
+
+#【技术与作业规程记录表】 第 15 项：基本功能 - 过载能力
+
+项目: 基本功能
+项目_2: 过载能力
+规格: G 型机:150%额定电流 60s,180%额定电流 10s,200%额定电流1s。P型机:120%额定电流 60s,145%额定电流 10s,160%额定电流1s。
+P 型机:120%额定电流 60s,145%额定电流 10s,160%额定电流
+转矩提升 自动转矩提升；手动转矩提升 0.1%～30.0%
+三种方式:直线型；多点型；N 次方型 V/F 曲线（1.2 次方、1.4
+次方、1.6 次方、1.8 次方、2 次方）
+
+#【技术与作业规程记录表】 第 16 项：基本功能 - 转矩提升
+
+项目: 基本功能
+项目_2: 转矩提升
+规格: 自动转矩提升；手动转矩提升0.1%~30.0%
+
+#【技术与作业规程记录表】 第 17 项：基本功能 - V/F曲线
+
+项目: 基本功能
+项目_2: V/F曲线
+规格: 三种方式：直线型；多点型；N次方型 V/F曲线(1.2 次方、1.4次方、1.6 次方、1.8次方、2次方)
+
+#【技术与作业规程记录表】 第 18 项：基本功能 - 加减速曲线
+
+项目: 基本功能
+项目_2: 加减速曲线
+规格: 直线或S 曲线加减速方式。四种加减速时间，加减速时间范围0.0~6000.0s
+四种加减速时间，加减速时间范围 0.0～6000.0s
+直流制动频率:0.00Hz～最大频率
+制动时间:0.0s～10.0s
+	点动控制	点动加减速时间 0.0s～6000.0s。
+基本	简易 PLC、多段速运行	通过内置 PLC 或控制端子实现最多 16 段速运行
+功能	内置 PID	可方便实现过程控制闭环控制系统
+	自动电压调整（AVR）	当电网电压变化时，能自动保持输出电压恒定
+	快速限流功能	最大限度减小过流故障，保护变频器正常运行
+	过压过流失速控制	对运行期间电流电压自动限制，防止频繁过流过压跳闸
+
+#【技术与作业规程记录表】 第 19 项：基本功能 - 直流制动
+
+项目: 基本功能
+项目_2: 直流制动
+规格: 直流制动频率:0.00Hz最大频率制动时间：0.0s10.0s制动动作电流值：0.0%~150.0%
+
+#【技术与作业规程记录表】 第 20 项：基本功能 - 点动控制
+
+项目: 基本功能
+项目_2: 点动控制
+规格: 点动频率范围：0.00Hz50.00Hz。点动加减速时间0.0s6000.0s。
+
+#【技术与作业规程记录表】 第 21 项：基本功能 - 简易PLC、多段速运行
+
+项目: 基本功能
+项目_2: 简易PLC、多段速运行
+规格: 通过内置PLC 或控制端子实现最多16 段速运行
+
+#【技术与作业规程记录表】 第 22 项：基本功能 - 内置 PID
+
+项目: 基本功能
+项目_2: 内置 PID
+规格: 可方便实现过程控制闭环控制系统
+
+#【技术与作业规程记录表】 第 23 项：基本功能 - 自动电压调整(AVR）
+
+项目: 基本功能
+项目_2: 自动电压调整(AVR）
+规格: 当电网电压变化时，能自动保持输出电压恒定
+
+#【技术与作业规程记录表】 第 24 项：基本功能 - 快速限流功能
+
+项目: 基本功能
+项目_2: 快速限流功能
+规格: 最大限度减小过流故障，保护变频器正常运行
+
+#【技术与作业规程记录表】 第 25 项：基本功能 - 过压过流失速控制
+
+项目: 基本功能
+项目_2: 过压过流失速控制
+规格: 对运行期间电流电压自动限制，防止频繁过流过压跳闸
+
+#【技术与作业规程记录表】 第 26 项：运行 - 命令源
+
+项目: 运行
+项目_2: 命令源
+规格: 操作面板给定、控制端子给定、串行通讯口给定。可通过多种方式切换
+可通过多种方式切换
+</code></pre>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>抱歉，当前知识库参考资料中未收录此相关内容。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是关于 FR600 多段速（F12 组）的具体参数，我直接从知识库里检索权威原文来确认段数。
+已确认，知识库里有明确原文。结论先给：</p>
+<p><strong>FR600 变频器最多支持 16 段速运行。</strong></p>
+<p>来源是知识库《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第六章（参数说明）。</p>
+<h2>实现方式</h2>
+<ul>
+<li>FR600 用 <strong>4 个多段指令端子</strong>组合出 16 种状态来实现多段速。在 F04（开关量输入端子）功能定义里：
+<ul>
+<li><strong>功能码 13 = 多段指令端子1</strong></li>
+<li><strong>功能码 14 = 多段指令端子2</strong></li>
+<li><strong>功能码 15 = 多段指令端子3</strong></li>
+<li><strong>功能码 16 = 多段指令端子4</strong></li>
+</ul>
+</li>
+<li>手册原文明确写道：<em>"多段速度端子1～4 通过不同数字状态的组合最多可组成 <strong>16 段速度</strong>的设定。"</em></li>
+</ul>
+<h2>速度设定与参数对应（附表1）</h2>
+<p>4 个端子的 ON/OFF 组合共 16 种状态，对应 16 个速度设定值：</p>
+<table>
+<thead>
+<tr>
+<th>端子状态组合</th>
+<th>段速</th>
+<th>对应参数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OFF OFF OFF OFF</td>
+<td>多段速0</td>
+<td>F12.16</td>
+</tr>
+<tr>
+<td>…（共 16 种 4 位二进制组合）</td>
+<td>多段速1 ~ 多段速15</td>
+<td>F12.01 ~ F12.15</td>
+</tr>
+</tbody>
+</table>
+<p>即 4 个端子的 0000(全 OFF)~1111 共 16 种编码，分别映射到 <strong>F12.01~F12.15（段速1~15）</strong> 与 <strong>F12.16（段速0）</strong>。</p>
+<hr/>
+<p>补充一点（供参考）：之前用知识库的 QA 接口直接问"最多几段速"时，它返回"资料不足"，并只检索到 FR200 的 16 段记载——但那是 FR200、不能直接套用到 FR600。通过检索参数章节原文，已在本系列 FR600 手册中确认同样是 <strong>16 段</strong>，所以结论以 FR600 手册原文为准。</p>
+<p>需要的话，我可以把 16 段速的完整端子状态→参数映射表（16 行全列）整理出来，或一并列出 F12 组里多段速+简易 PLC 的全部功能码。</p>
+</div></article></div>
+<p class="note"><b>变化：</b>首轮“16 段”埋在原文里；第二轮直接表示未收录。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，参数说明错误</strong>首轮网站把 16 段埋在原文中，重测误称资料不足；WorkBuddy 明确答出 16 段。其“F12.16＝多段速0的数值”不准确：F12.16 选择 0 段给定来源，选择数字给定时数值由 F12.00 提供。</div></section>
+<section class="question" id="q33">
+<div class="question-heading">
+<div><span class="number">Q33</span><h2>变频器有哪几种频率给定方式？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>FR500/FR510、FR600、SY380、FR530M、REK10 等支持 9 种频率源：数字给定、键盘电位器给定、模拟电压给定、模拟电流给定、脉冲给定、串行口给定、多段速给定、PLC 给定、过程 PID 给定，可通过多种方式切换。IF150/IF500 等简化机型支持数字给定、键盘电位器给定、串行口给定、PLC 给定、过程 PID 给定。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据参考资料，关于“变频器频率给定方式”存在两种相关口径：一种是产品规格中的“频率源/频率给定”；另一种是参数设置中的“主频率源给定方式（F01.01）”。</p>
+<h3>1. 按产品规格中的“频率给定/频率源”口径</h3>
+<p>根据《31.05.0127_FR30简易用户手册_中文_20260525(V1.4).pdf》之章节【9 种频率源:数字给定、键盘电位器给定、模拟电压给定、模拟】中“【技术与作业规程记录表】第 27 项：运行 - 频率给定”记载，以及《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》同章节记载：</p>
+<p>频率给定规格为：9 种频率源：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>频率源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>数字给定</td>
+</tr>
+<tr>
+<td>2</td>
+<td>键盘电位器给定</td>
+</tr>
+<tr>
+<td>3</td>
+<td>模拟电压给定</td>
+</tr>
+<tr>
+<td>4</td>
+<td>模拟电流给定</td>
+</tr>
+<tr>
+<td>5</td>
+<td>脉冲给定</td>
+</tr>
+<tr>
+<td>6</td>
+<td>串行口给定</td>
+</tr>
+<tr>
+<td>7</td>
+<td>多段速给定</td>
+</tr>
+<tr>
+<td>8</td>
+<td>PLC给定</td>
+</tr>
+<tr>
+<td>9</td>
+<td>过程PID给定</td>
+</tr>
+</tbody>
+</table>
+<p>原文同时记载：“可通过多种方式切换”。</p>
+<h3>2. 按参数设置中的“主频率源给定方式（F01.01）”口径</h3>
+<p>根据《变频器参数设置与调试技巧.pptx》之章节【第 14 页：调试技巧-频率给定设置】记载：</p>
+<p>频率给定出厂默认为键盘电位器调节频率大小，而现场通常使用其他方式给定频率，我们就需要设置对应的频率给定方式。</p>
+<p>该页表格中记载 F01.01 主频率源给定方式 可选值如下：</p>
+<table>
+<thead>
+<tr>
+<th>可选值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>主数字频率</td>
+</tr>
+<tr>
+<td>1</td>
+<td>键盘电位器</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AI1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>通讯给定</td>
+</tr>
+<tr>
+<td>4</td>
+<td>多段指令</td>
+</tr>
+<tr>
+<td>5</td>
+<td>程序运行（简易 PLC)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>过程 PID</td>
+</tr>
+<tr>
+<td>7</td>
+<td>脉冲输入(HI)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>AI2</td>
+</tr>
+<tr>
+<td>9</td>
+<td>AI3</td>
+</tr>
+</tbody>
+</table>
+<p>根据《31.05.0168_FR580用户手册_中文_V1.4_20260506.pdf》之章节【5.1 基本功能参数 &gt; 【技术与作业规程记录表】第 10～19 项：F01.01 - 主频率源给定方式】记载，F01.01 的上述可选值与上表一致，且该手册中记载 F01.01 缺省值为 1。</p>
+<h3>结论</h3>
+<ul>
+<li>若按产品规格中的“频率源/频率给定”表述，参考资料记载为 9 种频率源：数字给定、键盘电位器给定、模拟电压给定、模拟电流给定、脉冲给定、串行口给定、多段速给定、PLC给定、过程PID给定。</li>
+<li>若按参数 F01.01 主频率源给定方式 表述，参考资料记载可选值为 0～9 共 10 种：主数字频率、键盘电位器、AI1、通讯给定、多段指令、程序运行（简易 PLC)、过程 PID、脉冲输入(HI)、AI2、AI3。</li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据当前参考资料，不同型号/文档对“变频器频率给定方式”的记载口径不完全一致。若未指定具体型号，最直接的依据是《变频器参数设置与调试技巧.pptx》第 14 页【调试技巧-频率给定设置】中关于 <strong>F01.01 主频率源给定方式</strong> 的记载。</p>
+<h2>1. 按《变频器参数设置与调试技巧.pptx》第 14 页【调试技巧-频率给定设置】记载</h2>
+<p>根据该页表格，<strong>F01.01 主频率源给定方式</strong>共有 <strong>10 种（0～9）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>代码</th>
+<th>频率给定方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>主数字频率</td>
+</tr>
+<tr>
+<td>1</td>
+<td>键盘电位器</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AI1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>通讯给定</td>
+</tr>
+<tr>
+<td>4</td>
+<td>多段指令</td>
+</tr>
+<tr>
+<td>5</td>
+<td>程序运行（简易 PLC）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>过程 PID</td>
+</tr>
+<tr>
+<td>7</td>
+<td>脉冲输入（HI）</td>
+</tr>
+<tr>
+<td>8</td>
+<td>AI2</td>
+</tr>
+<tr>
+<td>9</td>
+<td>AI3</td>
+</tr>
+</tbody>
+</table>
+<p>该页同时说明：</p>
+<blockquote>
+<p>频率给定出厂默认为键盘电位器调节频率大小，而现场通常使用其他方式给定频率，就需要设置对应的频率给定方式。</p>
+</blockquote>
+<hr/>
+<h2>2. 其他参考资料中的不同口径</h2>
+<p>为避免混淆，以下列出当前知识库中其他文档对“频率给定方式”的不同记载。</p>
+<h3>2.1 根据《31050096-FR150A_CH_V1.5_.pdf》第六章【参数说明】记载</h3>
+<p>该文档中明确列出了 <strong>F01.03 辅助频率源给定</strong> 的范围为 <strong>0～8</strong>，对应方式如下：</p>
+<table>
+<thead>
+<tr>
+<th>代码</th>
+<th>辅助频率源给定方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>辅助数字频率</td>
+</tr>
+<tr>
+<td>1</td>
+<td>键盘电位器</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AI1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>通讯给定</td>
+</tr>
+<tr>
+<td>4</td>
+<td>多段指令</td>
+</tr>
+<tr>
+<td>5</td>
+<td>程序运行（简易 PLC）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>过程 PID</td>
+</tr>
+<tr>
+<td>7</td>
+<td>脉冲输入（HI）</td>
+</tr>
+<tr>
+<td>8</td>
+<td>AI2</td>
+</tr>
+</tbody>
+</table>
+<p>该文档第六章还记载了主频率源给定方式中的部分条目，例如：</p>
+<ul>
+<li>AI1：将 AI1 模拟量对应的频率的值作为当前主频率源的设定频率；</li>
+<li>通讯给定：上位机通过变频器内置的标准 RS485 通讯接口，向 2001H 写入的频率值作为当前主频率源的设定频率；</li>
+<li>多段指令：通过数字量输入 DI 端子的不同状态组合，对应不同的设定频率值；</li>
+<li>程序运行（简易 PLC）：设定频率由简易 PLC 确定；</li>
+<li>过程 PID：设定频率由过程闭环 PID 运算结果确定；</li>
+<li>脉冲输入（HI）：设定频率由端子的脉冲频率确定，只能由 DI7/HI 端子输入；</li>
+<li>AI2：将 AI2 模拟量对应的频率的值作为当前主频率源的设定频率。</li>
+</ul>
+<hr/>
+<h3>2.2 根据《REK10用户手册.pdf》第六章【参数说明】记载</h3>
+<p>该文档中 <strong>F01.01 主频率源给定方式</strong> 范围为 <strong>0～7</strong>，对应方式如下：</p>
+<table>
+<thead>
+<tr>
+<th>代码</th>
+<th>主频率源给定方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>将 F01.02 的值作为当前主频率源的设定频率，即主数字频率给定</td>
+</tr>
+<tr>
+<td>1</td>
+<td>键盘电位器</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AI1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>通讯给定</td>
+</tr>
+<tr>
+<td>4</td>
+<td>多段指令</td>
+</tr>
+<tr>
+<td>5</td>
+<td>程序运行（简易 PLC）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>过程 PID</td>
+</tr>
+<tr>
+<td>7</td>
+<td>脉冲输入（HI）</td>
+</tr>
+</tbody>
+</table>
+<p>该文档中 <strong>F01.03 辅助频率源给定</strong> 范围也为 <strong>0～7</strong>，对应方式如下：</p>
+<table>
+<thead>
+<tr>
+<th>代码</th>
+<th>辅助频率源给定方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>辅助数字频率</td>
+</tr>
+<tr>
+<td>1</td>
+<td>键盘电位器</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AI1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>通讯给定</td>
+</tr>
+<tr>
+<td>4</td>
+<td>多段指令</td>
+</tr>
+<tr>
+<td>5</td>
+<td>程序运行（简易 PLC）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>过程 PID</td>
+</tr>
+<tr>
+<td>7</td>
+<td>脉冲输入（HI）</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h3>2.3 根据《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》及《31.05.0127_FR30简易用户手册_中文_20260525(V1.4).pdf》规格记载</h3>
+<p>这两份资料中均记载：</p>
+<blockquote>
+<p>9 种频率源：数字给定、键盘电位器给定、模拟电压给定、模拟电流给定、脉冲给定、串行口给定、多段速给定、PLC 给定、过程 PID 给定。可通过多种方式切换。</p>
+</blockquote>
+<p>即该口径下为 <strong>9 种频率源</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>频率源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>数字给定</td>
+</tr>
+<tr>
+<td>2</td>
+<td>键盘电位器给定</td>
+</tr>
+<tr>
+<td>3</td>
+<td>模拟电压给定</td>
+</tr>
+<tr>
+<td>4</td>
+<td>模拟电流给定</td>
+</tr>
+<tr>
+<td>5</td>
+<td>脉冲给定</td>
+</tr>
+<tr>
+<td>6</td>
+<td>串行口给定</td>
+</tr>
+<tr>
+<td>7</td>
+<td>多段速给定</td>
+</tr>
+<tr>
+<td>8</td>
+<td>PLC 给定</td>
+</tr>
+<tr>
+<td>9</td>
+<td>过程 PID 给定</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h2>结论</h2>
+<p>如果按 <strong>《变频器参数设置与调试技巧.pptx》第 14 页</strong> 中 <strong>F01.01 主频率源给定方式</strong> 回答，变频器频率给定方式为 <strong>10 种</strong>：</p>
+<ol>
+<li>主数字频率</li>
+<li>键盘电位器</li>
+<li>AI1</li>
+<li>通讯给定</li>
+<li>多段指令</li>
+<li>程序运行（简易 PLC）</li>
+<li>过程 PID</li>
+<li>脉冲输入（HI）</li>
+<li>AI2</li>
+<li>AI3</li>
+</ol>
+<p>但如果按具体型号手册，数量会不同：</p>
+<table>
+<thead>
+<tr>
+<th>资料口径</th>
+<th style="text-align:right">频率给定方式数量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>《变频器参数设置与调试技巧.pptx》F01.01 主频率源给定方式</td>
+<td style="text-align:right">10 种</td>
+</tr>
+<tr>
+<td>《REK10用户手册.pdf》F01.01 主频率源给定方式</td>
+<td style="text-align:right">8 种</td>
+</tr>
+<tr>
+<td>《REK10用户手册.pdf》F01.03 辅助频率源给定</td>
+<td style="text-align:right">8 种</td>
+</tr>
+<tr>
+<td>《31050096-FR150A_CH_V1.5_.pdf》F01.03 辅助频率源给定</td>
+<td style="text-align:right">9 种</td>
+</tr>
+<tr>
+<td>《FR500&amp;FR510》《FR30简易用户手册》规格描述</td>
+<td style="text-align:right">9 种频率源</td>
+</tr>
+</tbody>
+</table>
+<p>因此，若需用于具体设备调试，应以对应型号手册中的 <strong>F01.01 主频率源给定方式</strong> 或 <strong>F01.03 辅助频率源给定</strong> 功能码范围为准。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是通用问题，我以 FR 系列（FR150A/FR500/FR580 等）手册的"频率源选择"功能码为准，再核一次完整的给定方式清单和主/辅叠加机制。
+已核对知识库原文（来源：《31050096-FR150A_CH_V1.5_.pdf》第五章功能参数表、第六章 F01 组说明；FR 系列通用，FR500/FR510/FR580 一致）。FR 系列变频器支持<strong>双频率源</strong>（主频率源 + 辅助频率源），每个频率源都从同一套<strong>9 种基本给定方式</strong>里选。</p>
+<p><strong>9 种频率给定方式（主/辅频率源共用）——</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>给定方式</th>
+<th>来源 / 功能码要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>数字设定</strong></td>
+<td>操作面板数字键或 UP/DOWN 设定（主数字频率，F01.02）</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>键盘电位器</strong></td>
+<td>面板自带电位器，内部 0~5V 模拟量</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>AI1 模拟量</strong></td>
+<td>控制端子 AI1，0~10V 或 0~20mA（拨码切换）</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>AI2 模拟量</strong></td>
+<td>控制端子 AI2，0~10V 或 0~20mA</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>通讯给定</strong></td>
+<td>RS485（MODBUS）上位机写入命令字 2001H</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>多段指令（多段速）</strong></td>
+<td>4 个 DI 端子 16 种 ON/OFF 组合，对应 F12 组 16 段频率</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>程序运行（简易 PLC）</strong></td>
+<td>内置 PLC 自动按 F12 组时序运行</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>过程 PID</strong></td>
+<td>闭环控制，给定来自 F13 组 PID 运算</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>脉冲输入（HI）</strong></td>
+<td>DI7/HI 端子输入高速脉冲（0~100kHz，需 F00.09=1）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>这 9 种与 FR580 手册里说的"9 种频率源：数字、电位器、模拟电压、模拟电流、脉冲、串口、多速、PLC、过程 PID"完全对应（FR580 把 AI1/AI2 合述为"模拟电压/电流"）。</p>
+</blockquote>
+<h2>关键的"双源组合"机制</h2>
+<p>FR 系列不是只能选一种，而是用 <strong>F01 组</strong>把"主频率源"和"辅助频率源"组合起来：</p>
+<ul>
+<li><strong>F01.01 主频率源给定方式</strong>：0~8，选上面 9 种之一。</li>
+<li><strong>F01.03 辅助频率源给定方式</strong>：0~8，同样 9 种之一。</li>
+<li><strong>F01.00 频率源给定选择</strong>：决定怎么用这两个源——</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>设定值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>仅主频率源有效</td>
+</tr>
+<tr>
+<td>1</td>
+<td>仅辅助频率源有效</td>
+</tr>
+<tr>
+<td>2</td>
+<td>主 + 辅（叠加）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>主 − 辅（相减）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>MAX{主, 辅}（取大）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>MIN{主, 辅}（取小）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>AI1 × (主 + 辅)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>AI2 × (主 + 辅)</td>
+</tr>
+</tbody>
+</table>
+<p>此外还有独立的<strong>点动频率</strong>（F01.07，点动运行时生效），走单独通道。</p>
+<h2>一句话总结</h2>
+<p>频率给定有 <strong>9 种基本通道</strong>（数字/电位器/AI1/AI2/通讯/多段速/简易PLC/PID/脉冲），通过 F01 组可设<strong>主+辅双源</strong>并按 8 种逻辑（单用、叠加、相减、取大、取小、乘积）组合，外加点动给定——基本能覆盖所有现场调速场景。</p>
+<p>需要我把这 9 种给定方式各自对应的功能码（F01.01/F01.03 取值 + 相关组如 F04/F12/F13）整理成一张"给定方式→设置步骤"速查表吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>9 种来源答出；仍混入不同型号/功能码的其他口径。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：FR150A 口径正确，不能泛化</strong>两轮网站按技术规格表的类别列出九种频率给定方式。WorkBuddy 按 FR150A 手册 F01.01/F01.03 的 0～8 选项列出数字、电位器、AI1、通讯、多段、PLC、PID、脉冲、AI2，也正好九种；两种分类口径均有原文依据。问题是它把 FR150A 的功能码选项推广到所有机型，IF150/IF500 等简化机型不宜照搬。</div></section>
+<section class="question" id="q34">
+<div class="question-heading">
+<div><span class="number">Q34</span><h2>SY380的输入电压、输出电压和最高频率是多少？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>输入单相 220V（-15%~+20%）；输出电压 0~380VAC，误差小于 ±3%；最高输出频率 0.00~590.00Hz（单位0.01Hz）。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0130_SY380用户手册_中文_20260602(V1.3).pdf》第二章【产品信息】第 2.3 节【产品技术规格】中“表 2-2 产品技术规格”记载：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>额定输入电压（V）</td>
+<td>单相 220 V（-15%～+20%）</td>
+</tr>
+<tr>
+<td>输出电压（V）</td>
+<td>0～380VAC，误差小于±3%</td>
+</tr>
+<tr>
+<td>最高输出频率（Hz）</td>
+<td>0.00～590.00 Hz，单位 0.01Hz</td>
+</tr>
+</tbody>
+</table>
+<p>补充说明：若“输入电压”指光伏输入，则同一章节还记载：</p>
+<table>
+<thead>
+<tr>
+<th>光伏输入项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>最大直流电压</td>
+<td>900VDC</td>
+</tr>
+<tr>
+<td>推荐 Voc 电压范围</td>
+<td>600～850VDC</td>
+</tr>
+<tr>
+<td>推荐 MPPT 电压范围</td>
+<td>450～800VDC</td>
+</tr>
+<tr>
+<td>启动电压范围</td>
+<td>230～900VDC</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0130_SY380用户手册_中文_20260602(V1.3).pdf》第二章【产品信息】表 2-2“产品技术规格”记载，SY380 的相关规格如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功率输入：额定输入电压（V）</td>
+<td>单相 220 V（-15%～+20%）</td>
+</tr>
+<tr>
+<td>功率输出：输出电压（V）</td>
+<td>0～380VAC，误差小于±3%</td>
+</tr>
+<tr>
+<td>功率输出：最高输出频率（Hz）</td>
+<td>0.00～590.00 Hz，单位 0.01Hz</td>
+</tr>
+</tbody>
+</table>
+<p>因此，按该手册表 2-2“产品技术规格”记载：</p>
+<ul>
+<li><strong>输入电压</strong>：单相 220 V（-15%～+20%）</li>
+<li><strong>输出电压</strong>：0～380VAC，误差小于±3%</li>
+<li><strong>最高输出频率</strong>：0.00～590.00 Hz，单位 0.01Hz</li>
+</ul>
+<p>补充说明：同一文档第二章表 2-1 及附录 B【选配件】中另出现如下表述：</p>
+<ul>
+<li>输入电压：单相：220V，50/60Hz-15%~+30%</li>
+<li>输出电压：三相 0-440V</li>
+</ul>
+<p>因此，若按表 2-2“产品技术规格”回答，以上述“单相 220 V（-15%～+20%）、0～380VAC、0.00～590.00 Hz”为准；若按表 2-1/附录 B 中的表述，则输入电压为“单相：220V，50/60Hz-15%~+30%”，输出电压为“三相 0-440V”。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>SY380 之前查过过载能力，但输入/输出电压和最高频率还没专门核对。我直接从知识库检索原文确认。
+已核对知识库原文（来源：《31.05.0130_SY380用户手册_中文_20260602(V1.3).pdf》第二章 表 2-1 / 表 2-2，及其英文版 V1.3）。SY380 是<strong>单相进、三相出</strong>的光伏一体变频器，三项参数如下。</p>
+<h2>SY380 输入/输出电压与最高频率</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>额定输入电压</strong></td>
+<td><strong>单相 220 V</strong>（50/60 Hz）</td>
+<td>输入端为单相，这是 SY380 的特色（光伏一体机）</td>
+</tr>
+<tr>
+<td><strong>输出电压</strong></td>
+<td><strong>三相 0 ～ 380 VAC</strong>，误差 &lt; ±3%</td>
+<td>输出给三相电机</td>
+</tr>
+<tr>
+<td><strong>最高输出频率</strong></td>
+<td><strong>0.00 ～ 590.00 Hz</strong>（单位 0.01 Hz）</td>
+<td>与 FR 系列主流变频器一致</td>
+</tr>
+</tbody>
+</table>
+<h2>需要提醒的两处手册差异（已查到，如实说明）</h2>
+<p><strong>1. 输入电压允许偏差：中/英版本写法不一致</strong></p>
+<ul>
+<li>中文正式版（表 2-2）：单相 220 V（<strong>−15%～+20%</strong>）</li>
+<li>英文版（表 2-2）+ 表 2-1 脚注：单相 220 V（<strong>−15%～+30%</strong>）</li>
+<li>上限差了 10 个百分点。建议选型/现场以<strong>中文正式版铭牌</strong>为准，若用英版资料需留意。</li>
+</ul>
+<p><strong>2. 输出电压标注：有两套说法</strong></p>
+<ul>
+<li>表 2-2（技术规格主表）：<strong>三相 0～380 VAC</strong>，误差 &lt; ±3%</li>
+<li>表 2-1 型号表脚注：另写「Output voltage: 3-phase <strong>0-440V</strong>」</li>
+<li>440V 说法出现在型号表脚注，技术规格主表用的是 380V。实际输出上限由机型母线电压决定，<strong>以技术规格主表的 0～380VAC 为权威值</strong>，440V 那条疑似早期/笔误标注。</li>
+</ul>
+<h2>补充（来自同表，供横向参考）</h2>
+<ul>
+<li><strong>额定输入频率</strong>：50/60 Hz，波动 ±5%</li>
+<li><strong>光伏输入</strong>（SY380 特有）：最大直流电压 900VDC，推荐 Voc 600～850VDC，MPPT 450～800VDC</li>
+<li>控制方式：V/f、无 PG 矢量控制 1/2；最高输出频率 590Hz（与之前查的载波频率 0.7~16kHz、过载 G 型 150%/180%/200% 一致）</li>
+</ul>
+<p>⚠️ 一句话总结：<strong>SY380 = 单相 220V 进 / 三相 0~380V 出 / 最高 590Hz</strong>。输入偏差和输出电压在不同版本手册里有小出入，关键处（偏差上限、440V vs 380V）我标出来了，实际以中文正式版铭牌为准。</p>
+<p>需要我把 SY380 全系列（4.0B~022B）的"额定输入电流 / 输出电流 / 适配功率"对照表整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>三项核心数值一致；第二轮指出同手册另有不同电压范围。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，推断过度</strong>三份回答的单相 220V、三相 0～380V、最高 590Hz 核心数值一致。WorkBuddy 指出表 2-1/2-2 的 440V 与 380V 冲突是有用的，但称 440V 为“笔误”、自行指定哪处更权威，仍属推断。</div></section>
+<section class="question" id="q35">
+<div class="question-heading">
+<div><span class="number">Q35</span><h2>SY380的过载能力（G型/P型）是多少？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>G型机：150%额定电流 60s、180%额定电流 10s、200%额定电流 1s；P型机：120%额定电流 60s、145%额定电流 10s、160%额定电流 1s。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0130_SY380用户手册_中文_20260602(V1.3).pdf》第二章【产品信息】第 2.3 节【产品技术规格】中“表 2-2 产品技术规格”记载，SY380 的过载能力如下：</p>
+<table>
+<thead>
+<tr>
+<th>机型</th>
+<th>过载能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G 型机</td>
+<td>150%额定电流 60s，180%额定电流 10s，200%额定电流 1s</td>
+</tr>
+<tr>
+<td>P 型机</td>
+<td>120%额定电流 60s，145%额定电流 10s，160%额定电流 1s</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>根据《变频器培训手册(1).pdf》【27. 7. 3.故障现象】的参考记载：</p>
+<p>如果速度传感器损坏，机车将不能加速或是一加速就出现保护的现象。</p>
+<p>27.8. 直变器</p>
+<p>27.8. 1.检验方法：</p>
+<p>量电压看是否是为2 4 V ,若低于2 4 V ,则负载能力差，后量电流，是多少</p>
+<p>A 的电流输出的就为多少A , 电压不变则该直变器正常。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是另一个产品系列（SY380），我从知识库里检索它的过载能力，区分 G 型（通用/恒转矩）和 P 型（风机水泵/变转矩）。
+已查到，知识库里有明确原文。结论先给：</p>
+<p><strong>SY380 的过载能力分 G 型机和 P 型机两种，具体为——</strong></p>
+<p>来源：《31.05.0130_SY380用户手册_中文_20260602(V1.3).pdf》第二章 产品信息（技术规格表）。</p>
+<table>
+<thead>
+<tr>
+<th>机型</th>
+<th>60s</th>
+<th>10s</th>
+<th>1s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>G 型机</strong>（通用/恒转矩）</td>
+<td>150% 额定电流</td>
+<td>180% 额定电流</td>
+<td>200% 额定电流</td>
+</tr>
+<tr>
+<td><strong>P 型机</strong>（风机水泵/变转矩）</td>
+<td>120% 额定电流</td>
+<td>145% 额定电流</td>
+<td>160% 额定电流</td>
+</tr>
+</tbody>
+</table>
+<p>也就是说：</p>
+<ul>
+<li><strong>G 型</strong>：可承受 150% 额定电流持续 60 秒，短时冲到 180%（10s）、200%（1s）。</li>
+<li><strong>P 型</strong>：可承受 120% 额定电流持续 60 秒，短时冲到 145%（10s）、160%（1s）。</li>
+</ul>
+<hr/>
+<p>补充背景（供参考）：SY380 手册显示该系列输入端为<strong>单相 220V</strong>，并带有光伏输入特性（最大直流 900VDC），控制方式涵盖 V/f 与无 PG 矢量控制 1/2，起动转矩 0.5Hz 可达 180%。</p>
+<p>需要的话，我可以继续从知识库拉取 SY380 其他参数（如型号对应表 2-1 的具体电流/功率、功能码分组等）。</p>
+</div></article></div>
+<p class="note"><b>变化：</b>第二轮检索到培训手册中速度传感器段落，完全答非所问。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：正确，标签需收紧</strong>首轮网站给出全部六组数值，重测答非所问；WorkBuddy 恢复了 G/P 型的三档过载值。手册可支持 G 型恒转矩、P 型风机泵类；“P 型＝变转矩”不是本处原文。</div></section>
+<section class="question" id="q36">
+<div class="question-heading">
+<div><span class="number">Q36</span><h2>REK10的载波频率和过载能力是多少？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>载波频率 0.7kHz~12kHz；过载能力 150%额定电流 60s、180%额定电流 10s、200%额定电流 1s；最高输出频率 0.00~590.00Hz；功率范围 0.4~7.5kW。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《REK10用户手册.pdf》第二章产品信息【2.3 REK10 产品技术规格】中“表2-2 产品技术规格”记载：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>载波频率</td>
+<td>0.7kHz～12kHz</td>
+</tr>
+<tr>
+<td>过载能力</td>
+<td>150%额定电流 60s，180%额定电流 10s，200%额定电流 1s</td>
+</tr>
+</tbody>
+</table>
+<p>补充说明：<br/>
+根据同手册第五章【5.1 基本功能参数简表】记载，相关功能码参数如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>说明/范围</th>
+<th>缺省值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F00.13</td>
+<td>固定载波频率</td>
+<td>0.700~12.000kHz，载波最高只能设置到12K</td>
+<td>机型确定</td>
+</tr>
+<tr>
+<td>F00.15</td>
+<td>低频率载波</td>
+<td>0.700~12.000kHz</td>
+<td>2.000kHz</td>
+</tr>
+</tbody>
+</table>
+<p>另根据同手册第六章【参数说明】中“PWM载波频率的大小对变频器和电机的影响”部分记载，不同功率等级变频器的 PWM 载波频率设置范围和出厂值如下：</p>
+<table>
+<thead>
+<tr>
+<th>变频器功率</th>
+<th>载波频率设置范围</th>
+<th>载波频率出厂设定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>≤15kW</td>
+<td>0.700k~16.000k</td>
+<td>4.000k</td>
+</tr>
+<tr>
+<td>18.5kW~45kW</td>
+<td>0.700k~8.000k</td>
+<td>4.000k</td>
+</tr>
+<tr>
+<td>55kW~75kW</td>
+<td>0.700k~6.000k</td>
+<td>3.000k</td>
+</tr>
+<tr>
+<td>≥90kW</td>
+<td>0.700k~3.000k</td>
+<td>2.000k</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《REK10用户手册.pdf》【第二章产品信息】的参考记载：</p>
+<p>型号编码信息产品标签上标注的型号编号包含以下信息：</p>
+<p>型号编码信息</p>
+<p>产品标签上标注的型号编号包含以下信息：</p>
+<p><span class="missing-image">原回答图片：未命名图片</span></p>
+<p>图 2-1a 产品铭牌</p>
+<p><span class="missing-image">原回答图片：图 2-1a 产品铭牌 图2-1 b. 变频器铭牌（三相变频器示例，2.2千瓦）</span></p>
+<p>图2-1 b. 变频器铭牌（三相变频器示例，2.2千瓦）</p>
+<p>REK10是一款通用型变频器，可同时适用于恒定机械负载模式（适用于除离心泵和风机外的所有负载类型）以及机械负载力矩可变的负载模式，后者通常包括离心泵和风机等设备。<br/>
+载类型）以及机械负载力矩可变的负载模式，后者通常包括离心泵和风机等设备。</p>
+<p>表2-1 产品型号及技术数据</p>
+<table>
+<thead>
+<tr>
+<th>变频器型号</th>
+<th>电源容量KVA</th>
+<th>输入电流A</th>
+<th>额定输出A</th>
+<th>适配电机</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>变频器型号</td>
+<td>电源容量KVA</td>
+<td>输入电流A</td>
+<td>额定输出A</td>
+<td>kW</td>
+</tr>
+<tr>
+<td>单相电源:220V，50/60Hz 范围：-15%～+20%</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>REK10-2S-0.4B</td>
+<td>1.0</td>
+<td>6.5</td>
+<td>2.5</td>
+<td>0.37</td>
+</tr>
+<tr>
+<td>REK10-2S-0.7B</td>
+<td>1.5</td>
+<td>9.3</td>
+<td>4.2</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>REK10-2S-1.5B</td>
+<td>3.0</td>
+<td>15.7</td>
+<td>7.5</td>
+<td>1.5</td>
+</tr>
+<tr>
+<td>REK10-2S-2.2B</td>
+<td>4.0</td>
+<td>24</td>
+<td>9.5</td>
+<td>2.2</td>
+</tr>
+<tr>
+<td>REK10-2S-4.0B</td>
+<td>6.0</td>
+<td>30</td>
+<td>17</td>
+<td>4.0</td>
+</tr>
+<tr>
+<td>三相电源:380V，50/60Hz 范围：-15%～+30%</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>REK10-4T-0.4B</td>
+<td>1.0</td>
+<td>2.5</td>
+<td>1.6</td>
+<td>0.37</td>
+</tr>
+<tr>
+<td>REK10-4T-0.7B</td>
+<td>1.5</td>
+<td>3.4</td>
+<td>2.5</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>REK10-4T-1.5B</td>
+<td>3.0</td>
+<td>5.0</td>
+<td>4.2</td>
+<td>1.5</td>
+</tr>
+<tr>
+<td>REK10-4T-2.2B</td>
+<td>4.0</td>
+<td>5.8</td>
+<td>5.5</td>
+<td>2.2</td>
+</tr>
+<tr>
+<td>REK10-4T-4.0B</td>
+<td>6.0</td>
+<td>11</td>
+<td>9.5</td>
+<td>3.7、4</td>
+</tr>
+<tr>
+<td>REK10-4T-5.5B</td>
+<td>8.9</td>
+<td>14.6</td>
+<td>13</td>
+<td>5.5</td>
+</tr>
+<tr>
+<td>REK10-4T-7.5B</td>
+<td>11</td>
+<td>20.5</td>
+<td>17</td>
+<td>7.5</td>
+</tr>
+</tbody>
+</table>
+<p>*变频器的额定输入电流值为工业通用运行模式下的设计值。</p>
+<p>表2-2产品技术规格</p>
+<ul>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输入</p>
+</li>
+<li>
+<p><strong>项目</strong>: 额定输入电压（V）</p>
+</li>
+<li>
+<p><strong>规格</strong>:<br/>
+单相交流 220 V（-15%～+20%）<br/>
+三相交流 380 V（-15%～+30%）</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输入</p>
+</li>
+<li>
+<p><strong>项目</strong>: 额定输入电流（A） 见表 2-1</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输入</p>
+</li>
+<li>
+<p><strong>项目</strong>: 额定输入频率（Hz）</p>
+</li>
+<li>
+<p><strong>规格</strong>: 50Hz/60Hz，波动范围±5%</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输入</p>
+</li>
+<li>
+<p><strong>项目</strong>: 标准适用电机（kW） 见表 2-1</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输出</p>
+</li>
+<li>
+<p><strong>项目</strong>: 额定输出电流（A） 见表 2-1</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输出</p>
+</li>
+<li>
+<p><strong>项目</strong>: 最高输出电压（V）</p>
+</li>
+<li>
+<p><strong>规格</strong>: 0～额定输入电压，误差小于±3%</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输出</p>
+</li>
+<li>
+<p><strong>项目</strong>: 最高输出频率（Hz）</p>
+</li>
+<li>
+<p><strong>规格</strong>: 0.00～590.00 Hz，单位 0.01Hz</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输出</p>
+</li>
+<li>
+<p><strong>项目</strong>: 控制方式</p>
+</li>
+<li>
+<p><strong>规格</strong>:<br/>
+V/F 控制<br/>
+无 PG 矢量控制 1</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+功率<br/>
+输出</p>
+</li>
+<li>
+<p><strong>项目</strong>: 调速范围</p>
+</li>
+<li>
+<p><strong>规格</strong>:<br/>
+1:50（V/F 控制）<br/>
+1:100（无 PG 矢量控制 1）</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+控制<br/>
+特性</p>
+</li>
+<li>
+<p><strong>项目</strong>: 速度控制精度</p>
+</li>
+<li>
+<p><strong>规格</strong>:<br/>
+±0.5%（V/F 控制）<br/>
+±0.3%（无 PG 矢量控制 1）</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+控制<br/>
+特性</p>
+</li>
+<li>
+<p><strong>项目</strong>: 速度波动</p>
+</li>
+<li>
+<p><strong>规格</strong>: ±0.3%（无 PG 矢量控制 1）</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+控制<br/>
+特性</p>
+</li>
+<li>
+<p><strong>项目</strong>: 转矩响应</p>
+</li>
+<li>
+<p><strong>规格</strong>: &lt;10ms（无 PG 矢量控制 1）</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+控制<br/>
+特性</p>
+</li>
+<li>
+<p><strong>项目</strong>: 起动转矩</p>
+</li>
+<li>
+<p><strong>规格</strong>: 0.5Hz:180%（V/F 控制，无 PG 矢量控制 1）</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 载波频率</p>
+</li>
+<li>
+<p><strong>规格</strong>: 0.7kHz～12kHz</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 过载能力</p>
+</li>
+<li>
+<p><strong>规格</strong>: 150%额定电流 60s,180%额定电流 10s,200%额定电流 1s</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 转矩提升</p>
+</li>
+<li>
+<p><strong>规格</strong>: 自动转矩提升；手动转矩提升 0.1%～30.0%</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 直流制动</p>
+</li>
+<li>
+<p><strong>规格</strong>:<br/>
+直流制动频率:0.00Hz～最大频率<br/>
+制动时间:0.0s～10.0s<br/>
+制动动作电流值:0.0%～150.0%</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 点动控制</p>
+</li>
+<li>
+<p><strong>规格</strong>:<br/>
+点动频率范围:0.00Hz～50.00Hz。<br/>
+点动加减速时间 0.0s～6000.0s。</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 简易 PLC、多段速运行</p>
+</li>
+<li>
+<p><strong>规格</strong>: 通过内置 PLC 或控制端子实现最多 16 段速运行</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 内置 PID</p>
+</li>
+<li>
+<p><strong>规格</strong>: 可方便实现过程控制闭环控制系统</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 自动电压调整（AVR）</p>
+</li>
+<li>
+<p><strong>规格</strong>: 当电网电压变化时，能自动保持输出电压恒定</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 过压过流失速控制</p>
+</li>
+<li>
+<p><strong>规格</strong>: 对运行期间电流电压自动限制，防止频繁过流过压跳闸</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+基本<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 命令源</p>
+</li>
+<li>
+<p><strong>规格</strong>:<br/>
+操作面板给定、控制端子给定、串行通讯口给定。<br/>
+可通过多种方式切换</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+保护<br/>
+功能</p>
+</li>
+<li>
+<p><strong>项目</strong>: 提供十几种故障保护功能:过流、过压、欠压、过温、过载等保护功能。</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 显示</p>
+</li>
+<li>
+<p><strong>项目</strong>: LED 显示 显示参数</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 与</p>
+</li>
+<li>
+<p><strong>项目</strong>:<br/>
+实现按键的部分或全部锁定，定义部分按键的作用范围,以防止<br/>
+误操作</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+键盘<br/>
+操作</p>
+</li>
+<li>
+<p><strong>项目</strong>:<br/>
+按键锁定和功能选择 实现按键的部分或全部锁定，定义部分按键的作用范围,以防止<br/>
+误操作</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+键盘<br/>
+操作</p>
+</li>
+<li>
+<p><strong>项目</strong>: 运行和停车监视信息 在运行或停车中可分别设定监视 U00 组中的 4 个对象。</p>
+</li>
+<li>
+<p><strong>项目_1</strong>:<br/>
+键盘<br/>
+操作</p>
+</li>
+<li>
+<p><strong>项目</strong>:<br/>
+室内，不受阳光直射，无尘埃、腐蚀性气体、可燃性气体、油雾、<br/>
+水蒸气、滴水或盐分等</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 环境</p>
+</li>
+<li>
+<p><strong>项目</strong>:<br/>
+使用场所 室内，不受阳光直射，无尘埃、腐蚀性气体、可燃性气体、油雾、<br/>
+水蒸气、滴水或盐分等</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 环境</p>
+</li>
+<li>
+<p><strong>项目</strong>: 海拔高度 0～2000 米</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 环境</p>
+</li>
+<li>
+<p><strong>项目</strong>: 环境温度 -10℃～40℃（环境温度在 40℃～50℃，请降额使用）</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 环境</p>
+</li>
+<li>
+<p><strong>项目</strong>: 湿度 5～95%，不允许凝露</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 环境</p>
+</li>
+<li>
+<p><strong>项目</strong>: 振动 2（0.6g） 小于 5.9 m/s</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 环境</p>
+</li>
+<li>
+<p><strong>项目</strong>: 存贮温度 -20℃～+70℃</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 环境</p>
+</li>
+<li>
+<p><strong>项目</strong>: 效率 额定功率时≥93%</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 其他</p>
+</li>
+<li>
+<p><strong>项目</strong>: 安装方式 壁挂式或法兰（穿墙）安装</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 其他</p>
+</li>
+<li>
+<p><strong>项目</strong>: 防护等级 IP20</p>
+</li>
+<li>
+<p><strong>项目_1</strong>: 其他</p>
+</li>
+<li>
+<p><strong>项目</strong>: 冷却方式 强迫风冷</p>
+</li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>又换了一个产品（REK10），我继续从知识库检索它的载波频率和过载能力。
+已查到，知识库里有明确原文（来源：《REK10用户手册.pdf》第二章 产品信息，表 2-2 技术规格）。</p>
+<p><strong>REK10 的载波频率和过载能力如下——</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>载波频率</strong></td>
+<td><strong>0.7 kHz ～ 12 kHz</strong></td>
+</tr>
+<tr>
+<td><strong>过载能力</strong></td>
+<td><strong>150% 额定电流 60s，180% 额定电流 10s，200% 额定电流 1s</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>关于"G 型 / P 型"</h2>
+<p>REK10 与前面查的 SY380 不同——<strong>手册里没有区分 G 型机和 P 型机</strong>，只给出<strong>统一的一组过载能力</strong>（即上面那组 150%/180%/200%）。它定位是"通用型变频器"，可同时适用于恒转矩负载和变转矩负载（如离心泵、风机），所以不另分 G/P 档位。</p>
+<p>对照一下，方便你横向比较：</p>
+<ul>
+<li><strong>SY380</strong>：区分 G 型 / P 型（G：150%/180%/200%；P：120%/145%/160%）</li>
+<li><strong>REK10</strong>：不区分，统一为 <strong>150%/180%/200%</strong>（与 SY380 的 G 型一致）</li>
+</ul>
+<hr/>
+<p>补充（来自同表）：REK10 控制方式为 V/f 与无 PG 矢量控制 1，起动转矩 0.5Hz 可达 180%，最高输出频率 590Hz，也支持最多 16 段速运行。</p>
+<p>需要的话，我可以继续从知识库拉取 REK10 的型号对应表（表 2-1，各功率的电流/适配电机）或其他功能参数。</p>
+</div></article></div>
+<p class="note"><b>变化：</b>数值仍在，但变成整段手册转储，未形成直接回答。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，遗漏原文冲突</strong>首轮网站直接给值，重测变成难读的手册转储；WorkBuddy 清楚列出表 2-2 的 0.7～12kHz 和三档过载。但手册 F00.13 说明另写到 16kHz，且“适用两类负载所以不分 G/P”是推论。</div></section>
+<section class="question" id="q37">
+<div class="question-heading">
+<div><span class="number">Q37</span><h2>IF150 的效率、防护等级、安装方式和冷却方式？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>额定功率时效率 ≥93%，防护等级 IP20，壁挂式或导轨式安装，强迫风冷；输出频率 0.00~600.00Hz、载波频率 0.7kHz~16kHz；起动转矩 0.5Hz:180%（V/F、无PG矢量1）、0.25Hz:180%（无PG矢量2）。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》第一章【产品信息】第 1.3 节【产品技术规格】中“表 1-2 产品技术规格”的“其他”项记载，IF150 工业大风扇驱动器相关参数如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>效率</td>
+<td>额定功率时≥93%</td>
+</tr>
+<tr>
+<td>安装方式</td>
+<td>壁挂式或导轨式安装</td>
+</tr>
+<tr>
+<td>防护等级</td>
+<td>IP20</td>
+</tr>
+<tr>
+<td>冷却方式</td>
+<td>强迫风冷</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》【第一章 产品信息】的参考记载：</p>
+<p><span class="missing-image">原回答图片：图1-1 产品型号命名规则</span></p>
+<p>图1-1 产品型号命名规则</p>
+<p>表 1-1 IF150 系列产品型号及技术数据</p>
+<table>
+<thead>
+<tr>
+<th>变频器型号</th>
+<th>电源容量</th>
+<th>输入电流</th>
+<th>输出电流</th>
+<th>适配电机</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>KVA</td>
+<td>A 单相电源:220V，50/60Hz</td>
+<td>A</td>
+<td>kW HP 范围:-15%～+30%</td>
+<td></td>
+</tr>
+<tr>
+<td>IF150A-2S-1.5B</td>
+<td>3.0</td>
+<td>15.7 三相电源:380V，50/60Hz</td>
+<td>7.5</td>
+<td>1.5 范围:-15%～+30%</td>
+<td></td>
+</tr>
+<tr>
+<td>变频器型号</td>
+<td>电源容量 KVA</td>
+<td>输入电流 A</td>
+<td>输出电流 A</td>
+<td>适配电机 kW</td>
+<td></td>
+</tr>
+<tr>
+<td>单相电源:220V，50/60Hz 范围：-15%～+30%</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>IF150A-2S-1.5B</td>
+<td>3.0</td>
+<td>15.7</td>
+<td>7.5</td>
+<td>1.5</td>
+<td>2</td>
+</tr>
+<tr>
+<td>三相电源:380V，50/60Hz 范围：-15%～+30%</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>IF150-4T-1.5B</td>
+<td>3.0</td>
+<td>5.0</td>
+<td>4.2</td>
+<td>1.5</td>
+<td>2</td>
+</tr>
+<tr>
+<td>IF150-4T-2.2B</td>
+<td>4.0</td>
+<td>5.8</td>
+<td>5.5</td>
+<td>2.2</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>表 1-2 产品技术规格</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th></th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功率输入</td>
+<td>额定输入电压（V）</td>
+<td>单相 220V (-15%～+20%)三相 380V（-15%～+30%）</td>
+</tr>
+<tr>
+<td>功率输入</td>
+<td>额定输入电流（A）</td>
+<td>见表1-1</td>
+</tr>
+<tr>
+<td>功率输入</td>
+<td>额定输入频率（Hz）</td>
+<td>50Hz/60Hz，波动范围±5%</td>
+</tr>
+<tr>
+<td>功率输出</td>
+<td>最高输出电压（V）</td>
+<td>0～额定输入电压，误差小于±3%</td>
+</tr>
+<tr>
+<td>功率输出</td>
+<td>最高输出频率（Hz）</td>
+<td>0.00~600.00 Hz，单位0.01Hz</td>
+</tr>
+<tr>
+<td>控制特性</td>
+<td>控制方式</td>
+<td>V/F 控制无 PG 矢量控制 1无 PG 矢量控制 2</td>
+</tr>
+<tr>
+<td>控制特性</td>
+<td>调速范围</td>
+<td>1:50（V/F控制）1:100（无 PG 矢量控制 1）1:200（无 PG 矢量控制 2）</td>
+</tr>
+<tr>
+<td>控制特性</td>
+<td>速度控制精度</td>
+<td>±0.5%（V/F控制）±0.2%（无 PG 矢量控制1、2）</td>
+</tr>
+<tr>
+<td>控制特性</td>
+<td>速度波动</td>
+<td>±0.3%（无 PG矢量控制1、2）</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>转矩响应</th>
+<th>&lt;10ms（无 PG 矢量控制 1、2）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>起动转矩</td>
+<td>0.5Hz:180%（V/F控制，无PG矢量控制1）0.25Hz:180%（无 PG 矢量控制2）</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>载波频率</td>
+<td>0.7kHz~16kHz</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>过载能力</td>
+<td>150%额定电流 60s,180%额定电流10s,200%额定电流1s。</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>转矩提升</td>
+<td>自动转矩提升；手动转矩提升0.1%～30.0%</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>V/F 曲线</td>
+<td>三种方式：直线型；多点型；N次方型V/F曲线（1.2次方、1.4次方、1.6次方、1.8次方、2次方）</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>加减速曲线</td>
+<td>直线或S曲线加减速方式。四种加减速时间，加减速时间范围0.0～6000.0s</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>直流制动</td>
+<td>直流制动频率：0.00Hz～最大频率制动时间：0.0s~10.0s制动动作电流值：0.0%～150.0%</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>点动控制</td>
+<td>点动频率范围：0.00Hz~50.00Hz。点动加减速时间0.0s~6000.0s。</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>简易PLC、多段速运行</td>
+<td>通过内置PLC或控制端子实现最多16段速运行</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>内置 PID</td>
+<td>可方便实现过程控制闭环控制系统</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>自动电压调整（AVR）</td>
+<td>当电网电压变化时，能自动保持输出电压恒定</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>快速限流功能</td>
+<td>最大限度减小过流故障，保护变频器正常运行</td>
+</tr>
+<tr>
+<td>基本功能</td>
+<td>过压过流失速控制</td>
+<td>对运行期间电流电压自动限制，防止频繁过流过压跳闸</td>
+</tr>
+<tr>
+<td>运行</td>
+<td>命令源</td>
+<td>操作面板给定、控制端子给定、串行通讯口给定。可通过多种方式切换</td>
+</tr>
+<tr>
+<td>运行</td>
+<td>频率给定</td>
+<td>多种频率源:数字给定、键盘电位器给定、串行口给定、PLC给定、过程PID给定。可通过多种方式切换</td>
+</tr>
+<tr>
+<td>保护功能</td>
+<td>提供十几种故障保护功能:过流、过压、欠压、过温、过载等保护功能。</td>
+<td></td>
+</tr>
+<tr>
+<td>显示与键盘操作</td>
+<td>LED 显示</td>
+<td>显示参数</td>
+</tr>
+<tr>
+<td>显示与键盘操作</td>
+<td>按键锁定和功能选择</td>
+<td>实现按键的部分或全部锁定，定义部分按键的作用范围，以防止误操作</td>
+</tr>
+<tr>
+<td>显示与键盘操作</td>
+<td>运行和停车监视信息</td>
+<td>在运行或停车中可分别设定监视U00组中的4个对象。</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>使用场所</td>
+<td>室内，不受阳光直射，无尘埃、腐蚀性气体、可燃性气体、油雾、水蒸气、滴水或盐分等</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>海拔高度</td>
+<td>0~2000米1000米以上降额使用，每升高100米，额定输出电流减少1%</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>环境温度</td>
+<td>-10℃～40℃（环境温度在40℃～50℃，请降额使用）</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>湿度</td>
+<td>5～95%，不允许凝露</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>振动</td>
+<td>小于5.9m/s²（0.6g）</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>存贮温度</td>
+<td>-20℃~+70℃</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>效率</td>
+<td>额定功率时≥93%</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>安装方式</td>
+<td>壁挂式或导轨式安装</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>防护等级</td>
+<td>IP20</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>冷却方式</td>
+<td>强迫风冷</td>
+</tr>
+</tbody>
+</table>
+<p>图 1-2 产品尺寸图表 1-3 产品尺寸和重量表</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>变频器型号</th>
+<th>W</th>
+<th>H</th>
+<th>D</th>
+<th>外形和安装尺寸（mm）&lt;br&gt;W1&lt;br&gt;H1</th>
+<th>H2</th>
+<th>D1</th>
+<th>安装&lt;br&gt;孔 d</th>
+<th>重量&lt;br&gt;（Kg）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>IF150-2S-1.5</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>IF150-4T-1.5&lt;br&gt;IF150-4T-2.2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>3.04</td>
+</tr>
+</tbody>
+</table>
+<p><span class="missing-image">原回答图片：未命名图片</span></p>
+<p>图 1-2 产品尺寸图<br/>
+表1-3 产品尺寸和重量表</p>
+<table>
+<thead>
+<tr>
+<th>变频器型号</th>
+<th>外形和安装尺寸（mm）</th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>重量(Kg)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>变频器型号</td>
+<td>W</td>
+<td>H</td>
+<td>D</td>
+<td>W1</td>
+<td>H1</td>
+<td>H2</td>
+<td>D1</td>
+<td>安装孔d</td>
+<td>重量(Kg)</td>
+</tr>
+<tr>
+<td>IF150-2S-1.5</td>
+<td>239</td>
+<td>196</td>
+<td>124</td>
+<td>227</td>
+<td>155</td>
+<td>110</td>
+<td>110</td>
+<td>6</td>
+<td>3.04</td>
+</tr>
+<tr>
+<td>IF150-4T-1.5</td>
+<td>239</td>
+<td>196</td>
+<td>124</td>
+<td>227</td>
+<td>155</td>
+<td>110</td>
+<td>110</td>
+<td>6</td>
+<td>3.04</td>
+</tr>
+<tr>
+<td>IF150-4T-2.2</td>
+<td>239</td>
+<td>196</td>
+<td>124</td>
+<td>227</td>
+<td>155</td>
+<td>110</td>
+<td>110</td>
+<td>6</td>
+<td>3.04</td>
+</tr>
+</tbody>
+</table>
+<p>◆A:控制端子<br/>
+DI2 GND NC A GND B</p>
+<p><span class="missing-image">原回答图片：图 1-3 控制端子图</span></p>
+<p>图 1-3 控制端子图</p>
+<p>表1-4 控制端子说明</p>
+<ul>
+<li>
+<p><strong>类别</strong>:<br/>
+开关<br/>
+量输<br/>
+入</p>
+</li>
+<li>
+<p><strong>端子符号</strong>:<br/>
+DI2- GND A - B<br/>
+GND</p>
+</li>
+<li>
+<p><strong>端子名称</strong>:<br/>
+开关量输入端子 485 通讯端子<br/>
+485 通讯地</p>
+</li>
+<li>
+<p><strong>功能说明</strong>:<br/>
+最高输入频率:200Hz<br/>
+输入阻抗:2.4kΩ<br/>
+电平输入时电压范围: 9V～30V 速率:4800/9600/19200/38400/57600/115200bps<br/>
+控制板上的 RS485 拨动开关设置终端匹配电阻</p>
+</li>
+<li>
+<p><strong>类别</strong>: 类别</p>
+</li>
+<li>
+<p><strong>端子符号</strong>: 端子符号</p>
+</li>
+<li>
+<p><strong>端子名称</strong>: 端子名称</p>
+</li>
+<li>
+<p><strong>功能说明</strong>: 功能说明</p>
+</li>
+<li>
+<p><strong>类别</strong>: 开关量输入</p>
+</li>
+<li>
+<p><strong>端子符号</strong>: DI2- GND</p>
+</li>
+<li>
+<p><strong>端子名称</strong>: 开关量输入端子</p>
+</li>
+<li>
+<p><strong>功能说明</strong>: 最高输入频率:200Hz输入阻抗：2.4kΩ电平输入时电压范围：9V～30V</p>
+</li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>又是新系列（IF150），继续从知识库检索它的效率、防护等级、安装方式和冷却方式。
+已查到，知识库里有明确原文（来源：《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》第一章 产品信息，表 1-2 技术规格）。</p>
+<p><strong>IF150 的效率、防护等级、安装方式、冷却方式如下——</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>效率</strong></td>
+<td>额定功率时 <strong>≥93%</strong></td>
+</tr>
+<tr>
+<td><strong>防护等级</strong></td>
+<td><strong>IP20</strong></td>
+</tr>
+<tr>
+<td><strong>安装方式</strong></td>
+<td><strong>壁挂式或导轨式安装</strong></td>
+</tr>
+<tr>
+<td><strong>冷却方式</strong></td>
+<td><strong>强迫风冷</strong></td>
+</tr>
+</tbody>
+</table>
+<p>补充（同表其他项，供参考）：IF150 控制方式为 V/f、无 PG 矢量控制 1/2，载波频率 0.7kHz～16kHz，过载能力 150%/180%/200%（60s/10s/1s），也支持最多 16 段速；适用环境温度 −10℃～40℃、湿度 5～95% 不凝露、海拔 0～2000m。</p>
+<p>横向看，IF150 的这几项与之前查的 REK10 基本一致（IP20、强迫风冷、效率≥93%），区别主要在安装方式上：IF150 是<strong>壁挂式/导轨式</strong>，而 REK10 是<strong>壁挂式/法兰（穿墙）式</strong>。</p>
+<p>需要的话，我可以继续从知识库拉取 IF150 的型号对应表（表 1-1/1-3 的尺寸重量）或其他功能参数。</p>
+</div></article></div>
+<p class="note"><b>变化：</b>四项事实都在约 4 千字的原表转储中，需要用户自行查找。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：正确</strong>首轮网站四项均答出，重测把事实埋在长表中；WorkBuddy 简明给出 ≥93%、IP20、壁挂/导轨、强迫风冷，与 IF150 表 1-2 一致。</div></section>
+<section class="question" id="q38">
+<div class="question-heading">
+<div><span class="number">Q38</span><h2>IF150 和 IF500 有什么区别？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>IF150 为工业大风扇驱动器，采用 LED 显示，控制端子只有 DI2-GND、A-B、GND；IF500 为多功能工业大风扇驱动器，采用 LCD 点阵屏显示，控制端子额外提供 24V-GND 电源输出（+24V，最大输出电流200mA，可作数字输入输出端子工作电源和外接传感器电源）。两者型号相同：2S-1.5B、4T-1.5B、4T-2.2B。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>抱歉，当前知识库参考资料中未收录此相关内容。</p>
+<p>现有参考资料中未提供 <strong>IF150 与 IF500 的直接对比信息</strong>，仅分别记载了以下内容，因此不足以得出两者确定区别：</p>
+<ol>
+<li>
+<p><strong>关于 IF150</strong><br/>
+根据《31.05.0148_IF150 User Manual V1.1_20260225.pdf》之 <strong>PREFACE</strong> 记载：</p>
+<ul>
+<li>IF150 series drive 是 <strong>special purpose for industrial fan</strong>（工业风扇专用驱动器）。</li>
+<li>IF150 series multifunctional compact driver 被描述为 <strong>compact, beautiful shape, easy to operate, with a strong price competitive advantage</strong>（紧凑、外形美观、易于操作、具有较强价格竞争优势）。</li>
+<li>该手册介绍 IF150 series industrial large fan inverter 的 <strong>product features, structural features, parameter setting, operation, debugging, maintenance and inspection</strong>（产品特性、结构特性、参数设置、操作、调试、维护和检查）。</li>
+</ul>
+</li>
+<li>
+<p><strong>关于 IF500</strong><br/>
+根据《31.05.0129_IF500用户手册_中文_简易_V1.1_20260225.pdf》之 <strong>第二章 功能参数表 &gt; 2.1 基本功能参数简表</strong> 记载：</p>
+<ul>
+<li>资料中出现设备名称：<strong>IF500多功能工业大风扇驱动器</strong>。</li>
+<li>该章节主要列出 IF500 的基本功能参数，例如：
+<ul>
+<li>F02.15 直流制动等待时间</li>
+<li>F03.00 加速时间0</li>
+<li>F08.00 电机1类型选择</li>
+<li>F09.00 电机1VF曲线设定</li>
+<li>F10.00 速度/转矩控制选择</li>
+<li>F10.01 ASR 低速比例增益 Kp1</li>
+<li>F10.10 速度控制方式下转矩上限</li>
+<li>F10.16 转矩控制方式下转矩设定源选择</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>综上，当前资料仅分别提供了 IF150 的产品简介和 IF500 的部分功能参数表，未记载 IF150 与 IF500 在型号定位、功率规格、结构尺寸、参数体系、功能差异或适用场景等方面的对比信息，因此无法基于现有资料确定两者的具体区别。</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据当前参考资料，IF150 与 IF500 的区别只能依据已明确记载的内容进行确认；资料未记载的部分不作推断。</p>
+<h2>一、可确认的主要区别</h2>
+<h3>1. 产品系列与型号命名不同</h3>
+<p>根据《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》第一章【产品信息】表 1-1、表 1-3 记载，IF150 系列相关型号包括：</p>
+<ul>
+<li>表 1-1 中：<code>IF150A-2S-1.5B</code>、<code>IF150-4T-1.5B</code>、<code>IF150-4T-2.2B</code></li>
+<li>表 1-3 中：<code>IF150-2S-1.5</code>、<code>IF150-4T-1.5</code>、<code>IF150-4T-2.2</code></li>
+</ul>
+<p>根据《31.05.0129_IF500用户手册_中文_简易_V1.1_20260225.pdf》第一章【产品信息】表 1-1、表 1-3 记载，IF500 系列相关型号包括：</p>
+<ul>
+<li>表 1-1 中：<code>IF500-2S-1.5B</code>、<code>IF500-4T-1.5B</code>、<code>IF500-4T-2.2B</code></li>
+<li>表 1-3 中：<code>IF500-2S-1.5</code>、<code>IF500-4T-1.5</code>、<code>IF500-4T-2.2</code></li>
+</ul>
+<p>可确认差异：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>IF150</th>
+<th>IF500</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系列代号</td>
+<td>IF150</td>
+<td>IF500</td>
+</tr>
+<tr>
+<td>表 1-1 单相型号写法</td>
+<td><code>IF150A-2S-1.5B</code></td>
+<td><code>IF500-2S-1.5B</code></td>
+</tr>
+<tr>
+<td>表 1-1 三相 1.5 型号写法</td>
+<td><code>IF150-4T-1.5B</code></td>
+<td><code>IF500-4T-1.5B</code></td>
+</tr>
+<tr>
+<td>表 1-1 三相 2.2 型号写法</td>
+<td><code>IF150-4T-2.2B</code></td>
+<td><code>IF500-4T-2.2B</code></td>
+</tr>
+</tbody>
+</table>
+<p>参考上下文中的产品型号命名规则图：</p>
+<p>IF500：</p>
+<p><span class="missing-image">原回答图片：图1-1 产品型号命名规则</span></p>
+<p>IF150：</p>
+<p><span class="missing-image">原回答图片：图1-1 产品型号命名规则</span></p>
+<hr/>
+<h3>2. IF150 明确记载为工业风机用途，IF500 当前资料未记载用途</h3>
+<p>根据《31.05.0148_IF150 User Manual V1.1_20260225.pdf》【PREFACE】记载：</p>
+<blockquote>
+<p>“IF150 series drive special purpose for industrial fan.”<br/>
+“IF150 series industrial large fan inverter”</p>
+</blockquote>
+<p>即 IF150 在英文手册前言中被明确描述为面向工业风机/工业大型风机的专用变频器。</p>
+<p>而《31.05.0129_IF500用户手册_中文_简易_V1.1_20260225.pdf》第一章【产品信息】中，当前参考资料未记载 IF500 的用途或定位。</p>
+<hr/>
+<h3>3. 显示方式不同</h3>
+<p>根据《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》第一章【产品信息】表 1-2 记载：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>IF150 规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显示与键盘操作</td>
+<td>LED 显示：显示参数</td>
+</tr>
+</tbody>
+</table>
+<p>根据《31.05.0129_IF500用户手册_中文_简易_V1.1_20260225.pdf》第一章【产品信息】表 1-2 记载：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>IF500 规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显示与键盘操作</td>
+<td>LCD 显示：LCD 点阵屏显示参数</td>
+</tr>
+</tbody>
+</table>
+<p>可确认差异：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>IF150</th>
+<th>IF500</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显示方式</td>
+<td>LED 显示</td>
+<td>LCD 点阵屏显示</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h3>4. 外形尺寸中的深度 D 不同</h3>
+<p>根据《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》第一章【产品信息】表 1-3 记载，IF150 产品尺寸和重量如下：</p>
+<table>
+<thead>
+<tr>
+<th>变频器型号</th>
+<th style="text-align:right">W</th>
+<th style="text-align:right">H</th>
+<th style="text-align:right">D</th>
+<th style="text-align:right">W1</th>
+<th style="text-align:right">H1</th>
+<th style="text-align:right">H2</th>
+<th style="text-align:right">D1</th>
+<th style="text-align:right">安装孔 d</th>
+<th style="text-align:right">重量(Kg)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IF150-2S-1.5</td>
+<td style="text-align:right">239</td>
+<td style="text-align:right">196</td>
+<td style="text-align:right">124</td>
+<td style="text-align:right">227</td>
+<td style="text-align:right">155</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">3.04</td>
+</tr>
+<tr>
+<td>IF150-4T-1.5</td>
+<td style="text-align:right">239</td>
+<td style="text-align:right">196</td>
+<td style="text-align:right">124</td>
+<td style="text-align:right">227</td>
+<td style="text-align:right">155</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">3.04</td>
+</tr>
+<tr>
+<td>IF150-4T-2.2</td>
+<td style="text-align:right">239</td>
+<td style="text-align:right">196</td>
+<td style="text-align:right">124</td>
+<td style="text-align:right">227</td>
+<td style="text-align:right">155</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">3.04</td>
+</tr>
+</tbody>
+</table>
+<p>根据《31.05.0129_IF500用户手册_中文_简易_V1.1_20260225.pdf》第一章【产品信息】表 1-3 记载，IF500 产品尺寸和重量如下：</p>
+<table>
+<thead>
+<tr>
+<th>变频器型号</th>
+<th style="text-align:right">W</th>
+<th style="text-align:right">H</th>
+<th style="text-align:right">D</th>
+<th style="text-align:right">W1</th>
+<th style="text-align:right">H1</th>
+<th style="text-align:right">H2</th>
+<th style="text-align:right">D1</th>
+<th style="text-align:right">安装孔 d</th>
+<th style="text-align:right">重量(Kg)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IF500-2S-1.5</td>
+<td style="text-align:right">239</td>
+<td style="text-align:right">196</td>
+<td style="text-align:right">112.5</td>
+<td style="text-align:right">227</td>
+<td style="text-align:right">155</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">3.04</td>
+</tr>
+<tr>
+<td>IF500-4T-1.5</td>
+<td style="text-align:right">239</td>
+<td style="text-align:right">196</td>
+<td style="text-align:right">112.5</td>
+<td style="text-align:right">227</td>
+<td style="text-align:right">155</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">3.04</td>
+</tr>
+<tr>
+<td>IF500-4T-2.2</td>
+<td style="text-align:right">239</td>
+<td style="text-align:right">196</td>
+<td style="text-align:right">112.5</td>
+<td style="text-align:right">227</td>
+<td style="text-align:right">155</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">3.04</td>
+</tr>
+</tbody>
+</table>
+<p>可确认差异：</p>
+<table>
+<thead>
+<tr>
+<th>尺寸项目</th>
+<th style="text-align:right">IF150</th>
+<th style="text-align:right">IF500</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W</td>
+<td style="text-align:right">239</td>
+<td style="text-align:right">239</td>
+</tr>
+<tr>
+<td>H</td>
+<td style="text-align:right">196</td>
+<td style="text-align:right">196</td>
+</tr>
+<tr>
+<td>D</td>
+<td style="text-align:right">124</td>
+<td style="text-align:right">112.5</td>
+</tr>
+<tr>
+<td>W1</td>
+<td style="text-align:right">227</td>
+<td style="text-align:right">227</td>
+</tr>
+<tr>
+<td>H1</td>
+<td style="text-align:right">155</td>
+<td style="text-align:right">155</td>
+</tr>
+<tr>
+<td>H2</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">110</td>
+</tr>
+<tr>
+<td>D1</td>
+<td style="text-align:right">110</td>
+<td style="text-align:right">110</td>
+</tr>
+<tr>
+<td>安装孔 d</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">6</td>
+</tr>
+<tr>
+<td>重量(Kg)</td>
+<td style="text-align:right">3.04</td>
+<td style="text-align:right">3.04</td>
+</tr>
+</tbody>
+</table>
+<p>即：在已记载的外形尺寸中，IF150 与 IF500 的主要差异是 <strong>D 值不同</strong>：IF150 为 <code>124</code>，IF500 为 <code>112.5</code>。</p>
+<p>参考上下文中的产品尺寸图：</p>
+<p>IF500：</p>
+<p><span class="missing-image">原回答图片：未命名图片</span></p>
+<p><span class="missing-image">原回答图片：未命名图片</span></p>
+<p>图 1-2 产品尺寸图</p>
+<p>IF150：</p>
+<p><span class="missing-image">原回答图片：未命名图片</span></p>
+<p>图 1-2 产品尺寸图</p>
+<hr/>
+<h3>5. 控制端子标识与部分端子说明不同</h3>
+<p>根据《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》第一章【产品信息】图 1-3、表 1-4 记载：</p>
+<ul>
+<li>IF150 控制端子图标注为：<code>DI2 GND NC A GND B</code></li>
+<li>IF150 表 1-4 中开关量输入端子符号为：<code>DI2- GND</code></li>
+<li>IF150 表 1-4 功能说明包括：
+<ul>
+<li>最高输入频率：<code>200Hz</code></li>
+<li>输入阻抗：<code>2.4kΩ</code></li>
+<li>电平输入时电压范围：<code>9V～30V</code></li>
+<li>485 通讯速率：<code>4800/9600/19200/38400/57600/115200bps</code></li>
+<li>控制板上的 RS485 拨动开关设置终端匹配电阻</li>
+</ul>
+</li>
+</ul>
+<p>根据《31.05.0129_IF500用户手册_中文_简易_V1.1_20260225.pdf》第一章【产品信息】图 1-3、表 1-4 记载：</p>
+<ul>
+<li>IF500 控制端子图标注为：<code>DI GND 24V A GND B</code></li>
+<li>IF500 表 1-4 中开关量输入端子符号为：<code>DI- GND</code></li>
+<li>IF500 表 1-4 功能说明包括：
+<ul>
+<li>最高输入频率：<code>200Hz</code></li>
+<li>输入阻抗：<code>2.4kΩ</code></li>
+<li>电平输入时电压范围：<code>9V～30V</code></li>
+<li>485 通讯速率：<code>4800/9600/19200/38400/57600/115200bps</code></li>
+<li>控制板上的 RS485 拨动开关设置终端匹配电阻</li>
+<li>向外提供 <code>+24V</code> 电源，一般用作数字输入输出端子工作电源和外接传感器电源</li>
+<li>最大输出电流：<code>200mA</code></li>
+</ul>
+</li>
+</ul>
+<p>可确认差异：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>IF150</th>
+<th>IF500</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>控制端子图标注</td>
+<td><code>DI2 GND NC A GND B</code></td>
+<td><code>DI GND 24V A GND B</code></td>
+</tr>
+<tr>
+<td>开关量输入端子符号</td>
+<td><code>DI2- GND</code></td>
+<td><code>DI- GND</code></td>
+</tr>
+<tr>
+<td>是否记载 +24V 电源功能说明</td>
+<td>当前 IF150 资料未记载</td>
+<td>当前 IF500 资料记载：向外提供 +24V 电源，最大输出电流 200mA</td>
+</tr>
+</tbody>
+</table>
+<p>参考上下文中的控制端子图：</p>
+<p>IF500：</p>
+<p><span class="missing-image">原回答图片：图 1-3 控制端子图</span></p>
+<p>IF150：</p>
+<p><span class="missing-image">原回答图片：图 1-3 控制端子图</span></p>
+<hr/>
+<h2>二、参考资料中已记载且一致的主要技术数据</h2>
+<h3>1. 表 1-1 对应型号的电气数据一致</h3>
+<p>根据两份中文简易手册第一章【产品信息】表 1-1 记载，对应型号的电源容量、输入电流、输出电流、适配电机数据一致：</p>
+<table>
+<thead>
+<tr>
+<th>对应类型</th>
+<th>IF150 表 1-1 型号</th>
+<th>IF500 表 1-1 型号</th>
+<th style="text-align:right">电源容量 KVA</th>
+<th style="text-align:right">输入电流 A</th>
+<th style="text-align:right">输出电流 A</th>
+<th style="text-align:right">适配电机 kW</th>
+<th style="text-align:right">HP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单相 220V，50/60Hz</td>
+<td>IF150A-2S-1.5B</td>
+<td>IF500-2S-1.5B</td>
+<td style="text-align:right">3.0</td>
+<td style="text-align:right">15.7</td>
+<td style="text-align:right">7.5</td>
+<td style="text-align:right">1.5</td>
+<td style="text-align:right">2</td>
+</tr>
+<tr>
+<td>三相 380V，50/60Hz，1.5kW</td>
+<td>IF150-4T-1.5B</td>
+<td>IF500-4T-1.5B</td>
+<td style="text-align:right">3.0</td>
+<td style="text-align:right">5.0</td>
+<td style="text-align:right">4.2</td>
+<td style="text-align:right">1.5</td>
+<td style="text-align:right">2</td>
+</tr>
+<tr>
+<td>三相 380V，50/60Hz，2.2kW</td>
+<td>IF150-4T-2.2B</td>
+<td>IF500-4T-2.2B</td>
+<td style="text-align:right">4.0</td>
+<td style="text-align:right">5.8</td>
+<td style="text-align:right">5.5</td>
+<td style="text-align:right">2.2</td>
+<td style="text-align:right">3</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h3>2. 表 1-2 中除显示方式外，主要技术规格一致</h3>
+<p>根据《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》与《31.05.0129_IF500用户手册_中文_简易_V1.1_20260225.pdf》第一章【产品信息】表 1-2 记载，以下项目规格一致：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功率输入：额定输入电压（V）</td>
+<td>单相 220V (-15%～+20%) 三相 380V（-15%～+30%）</td>
+</tr>
+<tr>
+<td>功率输入：额定输入电流（A）</td>
+<td>见表 1-1</td>
+</tr>
+<tr>
+<td>功率输入：额定输入频率（Hz）</td>
+<td>50Hz/60Hz，波动范围±5%</td>
+</tr>
+<tr>
+<td>功率输出：最高输出电压（V）</td>
+<td>0～额定输入电压，误差小于±3%</td>
+</tr>
+<tr>
+<td>功率输出：最高输出频率（Hz）</td>
+<td>0.00~600.00 Hz，单位 0.01Hz</td>
+</tr>
+<tr>
+<td>控制特性：控制方式</td>
+<td>V/F 控制、无 PG 矢量控制 1、无 PG 矢量控制 2</td>
+</tr>
+<tr>
+<td>控制特性：调速范围</td>
+<td>1:50（V/F 控制）、1:100（无 PG 矢量控制 1）、1:200（无 PG 矢量控制 2）</td>
+</tr>
+<tr>
+<td>控制特性：速度控制精度</td>
+<td>±0.5%（V/F 控制）、±0.2%（无 PG 矢量控制 1、2）</td>
+</tr>
+<tr>
+<td>控制特性：速度波动</td>
+<td>±0.3%（无 PG 矢量控制 1、2）</td>
+</tr>
+<tr>
+<td>控制特性：转矩响应</td>
+<td>&lt;10ms（无 PG 矢量控制 1、2）</td>
+</tr>
+<tr>
+<td>控制特性：起动转矩</td>
+<td>0.5Hz:180%（V/F 控制，无 PG 矢量控制 1）；0.25Hz:180%（无 PG 矢量控制 2）</td>
+</tr>
+<tr>
+<td>基本功能：载波频率</td>
+<td>0.7kHz~16kHz</td>
+</tr>
+<tr>
+<td>基本功能：过载能力</td>
+<td>150% 额定电流 60s，180% 额定电流 10s，200% 额定电流 1s</td>
+</tr>
+<tr>
+<td>基本功能：转矩提升</td>
+<td>自动转矩提升；手动转矩提升 0.1%～30.0%</td>
+</tr>
+<tr>
+<td>基本功能：V/F 曲线</td>
+<td>三种方式：直线型；多点型；N 次方型 V/F 曲线（1.2 次方、1.4 次方、1.6 次方、1.8 次方、2 次方）</td>
+</tr>
+<tr>
+<td>基本功能：加减速曲线</td>
+<td>直线或 S 曲线加减速方式；四种加减速时间；加减速时间范围 0.0～6000.0s</td>
+</tr>
+<tr>
+<td>基本功能：直流制动</td>
+<td>直流制动频率：0.00Hz～最大频率；制动时间：0.0s~10.0s；制动动作电流值：0.0%～150.0%</td>
+</tr>
+<tr>
+<td>基本功能：点动控制</td>
+<td>点动频率范围：0.00Hz~50.00Hz；点动加减速时间 0.0s~6000.0s</td>
+</tr>
+<tr>
+<td>基本功能：简易 PLC、多段速运行</td>
+<td>通过内置 PLC 或控制端子实现最多 16 段速运行</td>
+</tr>
+<tr>
+<td>基本功能：内置 PID</td>
+<td>可方便实现过程控制闭环控制系统</td>
+</tr>
+<tr>
+<td>基本功能：自动电压调整（AVR）</td>
+<td>当电网电压变化时，能自动保持输出电压恒定</td>
+</tr>
+<tr>
+<td>基本功能：快速限流功能</td>
+<td>最大限度减小过流故障，保护变频器正常运行</td>
+</tr>
+<tr>
+<td>基本功能：过压过流失速控制</td>
+<td>对运行期间电流电压自动限制，防止频繁过流过压跳闸</td>
+</tr>
+<tr>
+<td>运行：命令源</td>
+<td>操作面板给定、控制端子给定、串行通讯口给定；可通过多种方式切换</td>
+</tr>
+<tr>
+<td>运行：频率给定</td>
+<td>数字给定、键盘电位器给定、串行口给定、PLC 给定、过程 PID 给定；可通过多种方式切换</td>
+</tr>
+<tr>
+<td>保护功能</td>
+<td>提供十几种故障保护功能：过流、过压、欠压、过温、过载等保护功能</td>
+</tr>
+<tr>
+<td>显示与键盘操作：按键锁定和功能选择</td>
+<td>实现按键的部分或全部锁定，定义部分按键的作用范围，以防止误操作</td>
+</tr>
+<tr>
+<td>显示与键盘操作：运行和停车监视信息</td>
+<td>在运行或停车中可分别设定监视 U00 组中的 4 个对象</td>
+</tr>
+<tr>
+<td>环境：使用场所</td>
+<td>室内，不受阳光直射，无尘埃、腐蚀性气体、可燃性气体、油雾、水蒸气、滴水或盐分等</td>
+</tr>
+<tr>
+<td>环境：海拔高度</td>
+<td>0~2000 米；1000 米以上降额使用，每升高 100 米，额定输出电流减少 1%</td>
+</tr>
+<tr>
+<td>环境：环境温度</td>
+<td>-10℃～40℃（环境温度在 40℃～50℃，请降额使用）</td>
+</tr>
+<tr>
+<td>环境：湿度</td>
+<td>5～95%，不允许凝露</td>
+</tr>
+<tr>
+<td>环境：振动</td>
+<td>小于 5.9m/s²（0.6g）</td>
+</tr>
+<tr>
+<td>环境：存贮温度</td>
+<td>-20℃~+70℃</td>
+</tr>
+<tr>
+<td>其他：效率</td>
+<td>额定功率时≥93%</td>
+</tr>
+<tr>
+<td>其他：安装方式</td>
+<td>壁挂式或导轨式安装</td>
+</tr>
+<tr>
+<td>其他：防护等级</td>
+<td>IP20</td>
+</tr>
+<tr>
+<td>其他：冷却方式</td>
+<td>强迫风冷</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h2>三、未收录内容声明</h2>
+<p>对于以下内容，当前知识库参考资料中未收录此相关内容：</p>
+<ol>
+<li>IF500 的用途、定位或适用场景；</li>
+<li>IF150 与 IF500 在上述资料未列出的其他结构差异、完整参数列表差异、完整端子定义差异或内部功能差异；</li>
+<li>除上述已记载差异外，是否还存在其他产品区别。</li>
+</ol>
+<p>因此，基于当前参考资料，可确认的 IF150 与 IF500 区别主要集中在：<strong>系列/型号命名、IF150 的工业风机用途描述、显示方式、外形深度 D、控制端子标识及部分端子说明</strong>。</p>
+<hr/>
+<blockquote>
+<p>⚠️ <strong>数值/型号回查未通过</strong>：以下内容未出现在本次引用的原文里，请核对原文后再采用 —— <code>1.5KW</code>、<code>2.2KW</code><br/>
+（已回查 83 项硬实体：型号 / 功能码 / 数值单位 / 端子信号）</p>
+</blockquote>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>IF150 之前查过基本规格，但 IF500 还没查过。我从知识库检索 IF500 的完整规格，再和 IF150 做对比。
+IF500 规格已取到，但之前查 IF150 只覆盖了效率/防护/安装/冷却四项，缺少最高频率、控制方式、输入电压等对比项。我补查 IF150 的完整技术规格，确保对比准确。
+已从知识库取到 IF150 和 IF500 的完整技术规格（IF150 来源：《31.05.0100_IF150_中文_简易_V1.3_20260225.pdf》表 1-2；IF500 来源：《31.05.0129_IF500用户手册_中文_简易_V1.1_20260225.pdf》表 1-2）。</p>
+<p><strong>结论先说：IF150 与 IF500 同属 "IF" 小功率经济型变频器系列，核心电气规格几乎完全一致；真正的差异集中在显示方式、控制端子配置和外形尺寸这三项细节上。</strong></p>
+<h2>一、核心规格（两者完全相同）</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>IF150</th>
+<th>IF500</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>额定输入电压</td>
+<td>单相 220V（−15%~+20%）/ 三相 380V（−15%~+30%）</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>最高输出电压</td>
+<td>0～额定输入电压，误差 &lt;±3%</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>最高输出频率</td>
+<td>0.00~600.00 Hz</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>控制方式</td>
+<td>V/f、无 PG 矢量 1、无 PG 矢量 2</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>调速范围</td>
+<td>1:50（V/f）、1:100（SVC1）、1:200（SVC2）</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>速度控制精度</td>
+<td>±0.5%（V/f）、±0.2%（SVC1/2）</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>载波频率</td>
+<td>0.7~16 kHz</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>过载能力</td>
+<td>150%/180%/200%（60s/10s/1s）</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>效率 / 防护 / 安装 / 冷却</td>
+<td>≥93% · IP20 · 壁挂/导轨 · 强迫风冷</td>
+<td>同左</td>
+</tr>
+</tbody>
+</table>
+<h2>二、实际差异（仅三项）</h2>
+<table>
+<thead>
+<tr>
+<th>差异点</th>
+<th>IF150</th>
+<th>IF500</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>显示方式</strong></td>
+<td><strong>LED 显示</strong>（普通数码指示）</td>
+<td><strong>LCD 点阵屏显示</strong>（更直观，可显示更多参数/中文信息）</td>
+</tr>
+<tr>
+<td><strong>控制端子</strong></td>
+<td>端子图标 "DI2-GND / A-B / GND"，表 1-4 只列开关量输入 + 485 通讯</td>
+<td>端子图标 "DI-GND / 24V / A-B / GND"，<strong>明确带 +24V、+10V 外供电源端子</strong>（给 DI/DO、传感器供电，最大 200mA）</td>
+</tr>
+<tr>
+<td><strong>外形深度</strong></td>
+<td>深 <strong>124 mm</strong></td>
+<td>深 <strong>112.5 mm</strong>（薄约 11.5mm）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>两者外形宽度/高度都是 239×196 mm、重量都是 3.04 kg，只有厚度不同。
+型号上：IF150 手册出现了 <strong>IF150A-2S-1.5B</strong>（带 "A" 变体），IF500 目前手册只列 IF500-2S/4T 标准型。</p>
+</blockquote>
+<h2>三、怎么选</h2>
+<ul>
+<li>想要<strong>更直观的屏幕、更完整的控制端子（自带 +24V/+10V 外供）</strong> → 选 <strong>IF500</strong>（LCD 版，性价比和现场调试体验更好）。</li>
+<li>对显示要求不高、更在意<strong>机身略薄一点</strong>或现有项目已用 IF150 → 选 <strong>IF150</strong>（LED 版）。</li>
+<li>功率段两者一致：小功率 1.5B / 2.2B 等（单相 220V 或三相 380V）。</li>
+</ul>
+<p>⚠️ 说明：从手册看，IF150 与 IF500 大概率是基于同一硬件平台的不同"显示/端子版本"，所以核心性能参数高度重合，并没有"一个高一个低"的档次差别。如果你问的是某个<strong>特定型号</strong>（比如 IF500-4T-2.2B vs IF150-4T-2.2B），我可以拉两者的完整参数表逐行核对。</p>
+<p>需要我把 IF150 / IF500 全系列（1.5B~2.2B）的"输入电流/输出电流/适配功率"对照表，或它们的控制端子定义整理成速查表吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>第二轮能跨文档比较部分显示、端子等差异；IF500 定位仍未答全。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：部分正确，附带两处错误</strong>两轮网站分别错误、部分可用；WorkBuddy 抓住 LED/LCD、24V 端子及深度差异。但 IF500 简易手册表 1-4 只列 +24V，不能加说 +10V；其给出的尺寸是 IF500 更薄，后文却建议“更在意机身略薄”选 IF150，自相矛盾。</div></section>
+<section class="question" id="q39">
+<div class="question-heading">
+<div><span class="number">Q39</span><h2>FR150A 的产品定位和适用场合？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>FR150A 系列多功能紧凑型变频器，功能丰富、体积紧凑、具有很强价格竞争优势，特别适合电子设备、食品包装、木工、跑步机等小功率传动场合。特点包括独立风道设计、键盘可拆卸、PCB增强三防涂覆、支持参数拷贝键盘、支持共直流母线方案、支持单相电机驱动、标配键盘电位器。功率 0.75~75kW。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>错误</span></div>
+<div class="answer-body"><pre><code class="language-text">根据《31050096-FR150A_CH_V1.5_.pdf》【2.2 FR150A 系列说明】的参考记载：
+
+2.2 FR150A 系列说明
+
+表 2-1 FR150A 系列产品型号及技术数据
+
+变频器型号	KVA	A 单相电源:220V，50/60Hz	出 A	输出 A 范围:-15%～+20%	kW	HP
+FR150A-2S-0.2B	0.5	4.9	1.6	-	0.25	0.25
+FR150A-2S-0.4B	1.0	6.5	2.5	-	0.37	0.5
+FR150A-2S-0.7B	1.5	9.3	4.2	-	0.75	1.0
+FR150A-2S-1.1B	1.1		5.5	-	1.1	1.5
+FR150A-2S-1.5B	3.0	15.7	7.5	-	1.5	
+FR150A-2S-2.2B	4.0		9.5	-	2.2	
+FR150A-4T-0.7B	1.5	3.4	2.5	-	0.75	
+FR150A-4T-1.5B	3.0	5.0	4.2	-	1.5	
+FR150A-4T-2.2B	4.0	5.8	5.5	-	2.2	
+FR150A-4T-4.0B	6.0		9.5	-	3.7、4	
+FR150A-4T-5.5B	8.9	14.6			5.5	7.5
+FR150A-4T-7.5B		20.5			7.5	
+FR150A-4T-018B		38.5			18.5	
+FR150A-4T-022B		46.5				
+变频器型号	电源容量KVA	输入电流A	重载额定输出A	轻载额定输出 A	适配电机kW HP	
+	单相电	源:220V，50/60H	z 范围：-15	%～+20%		
+FR150A-2S-0.2B	0.5	4.9	1.6	一	0.25	0.25
+FR150A-2S-0.4B	1.0	6.5	2.5	一	0.37	0.5
+FR150A-2S-0.7B	1.5	9.3	4.2	一	0.75	1.0
+FR150A-2S-1.1B	1.1	11	5.5	一	1.1	1.5
+FR150A-2S-1.5B	3.0	15.7	7.5	一	1.5	2
+FR150A-2S-2.2B	4.0	24	9.5	一	2.2	3
+FR150A-2S-4.0B	6.0	30	17	一	4.0	5
+	三相电	源:380V，50/60H	z 范围：-15	%～+30%		
+FR150A-4T-0.7B	1.5	3.4	2.5	一	0.75	1
+FR150A-4T-1.5B	3.0	5.0	4.2	一	1.5	2
+FR150A-4T-2.2B	4.0	5.8	5.5	一	2.2	3
+FR150A-4T-4.0B	6.0	11	9.5	一	3.7、4	5
+FR150A-4T-5.5B	8.9	14.6	13	17	5.5	7.5
+FR150A-4T-7.5B	11	20.5	17	20	7.5	10
+FR150A-4T-011B	17	26	25	32	11	15
+FR150A-4T-015B	21	35	32	37	15	20
+变频器型号	KVA	A 单相电源:220V，50/60Hz	出 A	输出 A 范围:-15%～+20%	kW	HP
+FR150A-4T-018B	24	38.5	37	45	18.5	25
+FR150A-4T-022B	30	46.5	45	49	22	30
+FR150A-4T-030B	40	62	60	75	30	40
+FR150A-4T-037B	57	76	75	82	37	50
+FR150A-4T-045						
+FR150A-4T-055						
+FR150A-4T-075						
+FR150A-4T-090						
+FR150A-4T-110						
+FR150A-4T-132						
+FR150A-4T-045	69	92	91	112	45	60
+FR150A-4T-055	85	113	112	134	55	70
+FR150A-4T-075	114	157	150	168	75	100
+FR150A-4T-090	134	186	176	210	90	125
+FR150A-4T-110	160	220	210	253	110	150
+FR150A-4T-132	192	260	253	304	132	175
+FR150A-4T-160	231	310	304	340	160	210
+</code></pre>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31050096-FR150A_CH_V1.5_.pdf》【前言】记载，FR150A 的产品定位和适用场合如下：</p>
+<ol>
+<li>
+<p><strong>产品定位</strong></p>
+<ul>
+<li>FR150A 系列为<strong>多功能紧凑型变频器</strong>。</li>
+<li>其定位为<strong>功能丰富、体积紧凑、具有很强价格竞争优势</strong>的机型。</li>
+</ul>
+</li>
+<li>
+<p><strong>适用场合</strong></p>
+<ul>
+<li>特别适合<strong>小功率传动场合</strong>。</li>
+<li>文中明确列举的适用领域包括：
+<ul>
+<li>电子设备</li>
+<li>食品包装</li>
+<li>木工</li>
+<li>跑步机</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>FR150A 的技术规格我已查过，但"产品定位/适用场合"属于手册概述性描述，我专门从知识库检索这部分原文。
+已从知识库取到 FR150A 的关键原文，尤其型号命名规则里对产品代号的释义直接定义了它的定位（来源：《31050096-FR150A_CH_V1.5_.pdf》第二章 型号命名规则、表 2-2；《FR150A User manual V1.3.pdf》）。</p>
+<p><strong>结论先说：FR150A 的定位是「多功能紧凑型通用标准变频器（内置制动单元）」，覆盖 0.25kW~160kW 宽功率段，适合绝大多数工业传动场合。</strong></p>
+<h2>一、产品定位（来自手册型号代号释义，原文）</h2>
+<p>手册对 FR150A 的型号代号做了明确解释：</p>
+<table>
+<thead>
+<tr>
+<th>代号</th>
+<th>手册原文释义</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>FR150</strong></td>
+<td>"Multifunctional Compact Inverter"</td>
+<td><strong>多功能紧凑型变频器</strong></td>
+</tr>
+<tr>
+<td><strong>A</strong></td>
+<td>"Standard Machine（B～Z: Industry-specific retention）"</td>
+<td><strong>标准机型</strong>（区别于 B~Z 的行业专用型）</td>
+</tr>
+<tr>
+<td><strong>B</strong></td>
+<td>"Built-in brake unit"</td>
+<td><strong>内置制动单元</strong></td>
+</tr>
+<tr>
+<td>电机类型</td>
+<td>"0.7: 0.75kW (General type)"</td>
+<td><strong>通用型</strong>电机适配</td>
+</tr>
+</tbody>
+</table>
+<p>也就是说：FR150A = <strong>多功能紧凑型 + 标准通用机型 + 内置制动单元</strong>，它不是某个行业（如起重、纺机）的定制型，而是面向通用市场的标准产品。</p>
+<h2>二、支撑这一定位的核心特征（表 2-2 技术规格）</h2>
+<ul>
+<li><strong>功率覆盖极宽</strong>：单相 220V 0.25~4kW（0.2B~4.0B），三相 380V 0.75~160kW（0.7B~160）。</li>
+<li><strong>控制方式齐全</strong>：V/f、无 PG 矢量控制 1、无 PG 矢量控制 2（SVC2 调速范围 1:200）。</li>
+<li><strong>重载 / 轻载双电流标注</strong>：如 75kW 有 150A（重载）与 168A（轻载）两组，既能带恒转矩也能带变转矩负载。</li>
+<li><strong>标准适配电机</strong>：四极鼠笼式异步感应电机或 PMSM（永磁同步电机）。</li>
+<li><strong>内置多种通用功能</strong>：简易 PLC + 16 段速、内置 PID、AVR 自动稳压、直流制动、多段速、9 种频率源。</li>
+<li><strong>结构紧凑</strong>：IP20、强迫风冷、壁挂/导轨安装、LED 显示。</li>
+</ul>
+<h2>三、适用场合（基于上述规格推导的典型应用）</h2>
+<ol>
+<li><strong>风机、水泵等变转矩负载</strong> —— 用轻载电流档，节能平稳。</li>
+<li><strong>传送带、搅拌机、挤出机、机床等恒转矩负载</strong> —— 用重载电流档 + SVC2 矢量控制，低速转矩足。</li>
+<li><strong>需要快速启停/频繁加减速的场合</strong> —— 因 <strong>内置制动单元（B）</strong>，适合起重、升降、卷绕、定位类设备，无需外配制动电阻/单元即可快速耗散再生能量。</li>
+<li><strong>小功率单相设备</strong> —— 单相 220V 版本（0.2B~4.0B）适合单相电网的小设备改造。</li>
+<li><strong>需要闭环升级的场合</strong> —— 标准适配 PMSM，可配合永磁电机使用。</li>
+</ol>
+<p>⚠️ 说明两点，避免误解：</p>
+<ul>
+<li>手册里<strong>没有单独一大段"适用场合"的文字描述</strong>，上面的"适用场合"是我根据型号代号释义 + 技术规格推导的，并非手册原话；而"多功能紧凑型 / 标准机型 / 内置制动单元"这部分是手册原文。</li>
+<li>"A = Standard Machine" 意味着它是通用标准版；若遇到 FR150<strong>B/C…</strong> 等带其他行业代号的，才属行业专用机型，FR150A 本身不绑定特定行业。</li>
+</ul>
+<p>需要我把 FR150A 全系列（0.25kW~160kW）的"重载/轻载输出电流 + 适配功率 + 输入电压"对照表整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>第二轮答出多功能紧凑型、小功率场合及典型行业。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：定位正确，应用推断有误</strong>首轮网站答错，重测找到了手册前言的典型应用。FR150A V1.5 前言直接写有电子设备、食品包装、木工、跑步机等小功率场合，WorkBuddy 却说手册没有应用描述，并自行扩展到起重等场景；“内置制动单元便无需外配制动电阻”也不成立。其 0.25～160kW 范围可在该版型号表核查，题库原有功率范围反而应复核。</div></section>
+<section class="question" id="q41">
+<div class="question-heading">
+<div><span class="number">Q41</span><h2>FR30 系列相比 FR20 有什么特色功能？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>FR30 为高性能变频器（5.5~110kW），特点：书本型窄体结构、直流母线正负内置、双直流电抗器、内置 STO 端子、可拆卸中文液晶键盘、支持 3 组全局参数拷贝、PCB 增强三防涂覆、震荡抑制功能、支持零距离并排安装。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>暂不计分</span></div>
+<div class="answer-body"><p>关于“FR30 相比 FR20 的独有特色功能”这一确定对比结论：抱歉，当前知识库参考资料中未收录此相关内容。<br/>
+当前资料未提供 FR30 与 FR20 的同口径“特色功能”对比表，也未提供 FR20 的完整“特色功能”清单，因此无法严格判定 FR30 相比 FR20 的独有功能。以下为资料中可确认、可溯源的内容：</p>
+<h3>一、FR30 资料中明确记载的“特色功能”</h3>
+<ol>
+<li>
+<p>根据《FR30高性能变频器宣传彩页 V1.4 202507.pdf》产品规格【技术与作业规程记录表】第 22 项：特色功能记载：<br/>
+支持16段速运行;摆频控制运行;高精度转矩限定，V/F分离控制，无PG转矩控制</p>
+</li>
+<li>
+<p>根据《31.05.0127_FR30简易用户手册_中文_20260525(V1.4).pdf》“2 路模拟量输出端子，且电压电流可选，可实现设定频率、输出”章节下【技术与作业规程记录表】第 30 项：特色功能记载：</p>
+<p>参数拷贝、参数备份、灵活的功能码显隐性共直流母线各种主辅给定和切换可靠的速度搜索多种加减速曲线选择定时控制、定长控制功能、计数功能三组故障记录过励磁制动功能、过压失速、欠压失速、掉电再起动功能四段加减速时间自由切换功能电机温度保护功能灵活的风扇控制功能过程PID控制功能、简易PLC控制功能、最多可支持16段速运行摆频控制运行灵活的多功能键设置功能、弱磁控制功能高精度的转矩限定、V/F分离控制、无PG转矩控制</p>
+</li>
+</ol>
+<h3>二、FR20 资料中明确记载的系列特点</h3>
+<ol>
+<li>根据《FR20系列产品介绍 .pptx》第 10 页：FR20系列产品特点 —— 独立风道设计记载：<br/>
+独立风道设计，更强的防护性和恶劣环境适应能力</li>
+<li>根据《FR20系列产品介绍 .pptx》第 8 页：FR20系列产品特点 —— 全系内置直流电抗器记载：<br/>
+抑制谐波，提高功率因数，更节能、省电；<br/>
+平衡电压波动，输出电流更稳定，抗冲击能力强，延长变频器使用寿命；</li>
+</ol>
+<p>FR20 资料相关图示（原样保留）：</p>
+<h3>三、可确认的对比边界</h3>
+<p>FR30 资料中明确使用“特色功能”条目列出了上述功能。<br/>
+FR20 资料中仅明确列出“独立风道设计”“全系内置直流电抗器”两个系列特点，未列出与 FR30 同口径的“特色功能”清单。<br/>
+因此，不能依据当前资料断言 FR30 的上述功能均相对 FR20 独有；只能确认：FR30 资料中明确记载了上述特色功能，FR20 资料中明确记载了上述系列特点。</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>暂不计分</span></div>
+<div class="answer-body"><p>抱歉，在当前知识库参考资料中，未检索到与您问题相关的内容记录。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>FR30 和 FR20 之前都没专门查过。我并行从知识库检索这两个系列的特色功能与技术特点，再做对比。
+已从知识库取到两个系列的权威资料：FR30 来自《FR30高性能变频器宣传彩页 V1.4 202507.pdf》+《31.05.0127_FR30简易用户手册_中文_20260525(V1.4).pdf》；FR20 来自《FR20系列宣传彩页 V1.0 202508.pdf》+《FR20系列产品介绍.pptx》。</p>
+<p><strong>结论先说：FR30 定位"中高端全功能高性能变频器"，FR20 是"通用型变频器"。FR30 相比 FR20 的核心特色是——控制性能跃升（多了有PG矢量控制/VC）、STO 全系标配、双直流电抗器、以及一批高级算法功能（自适应PID、摆频、弱磁、转矩限定等）。</strong></p>
+<h2>FR30 相对于 FR20 的特色功能</h2>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>FR20（通用型）</th>
+<th>FR30（中高端全功能）</th>
+<th>FR30 特色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>产品定位</strong></td>
+<td>通用型变频器（18.5~110kW）</td>
+<td>中高端全功能、高功率密度</td>
+<td>FR30 档次更高</td>
+</tr>
+<tr>
+<td><strong>控制方式</strong></td>
+<td>资料未强调矢量（以 V/F、SVC 为主）</td>
+<td><strong>新增有PG矢量控制（VC）</strong>，内嵌 VC+SVC+VF</td>
+<td>FR30 多一档闭环矢量</td>
+</tr>
+<tr>
+<td><strong>调速/精度</strong></td>
+<td>常规</td>
+<td><strong>1:1000 调速、±0.1% 速度精度、0.00Hz 起 180% 转矩</strong>（有PG矢量）</td>
+<td>FR30 高性能核心</td>
+</tr>
+<tr>
+<td><strong>STO 安全转矩停止</strong></td>
+<td><strong>可选</strong>端子</td>
+<td><strong>全系内置</strong></td>
+<td>FR30 标配安全停车</td>
+</tr>
+<tr>
+<td><strong>直流电抗器</strong></td>
+<td>全系内置（18.5~110kW）</td>
+<td>全系内置，<strong>正负直流母线双直流电抗器</strong></td>
+<td>FR30 双路、谐波/功率因数更优</td>
+</tr>
+<tr>
+<td><strong>高级算法功能</strong></td>
+<td>资料未列</td>
+<td><strong>自适应PID、摆频控制、弱磁控制、高精度转矩限定、V/F分离、无PG转矩控制</strong></td>
+<td>FR30 独有特色功能包</td>
+</tr>
+<tr>
+<td><strong>I/O 端子</strong></td>
+<td>资料未详列</td>
+<td>7路DI（含高速脉冲，兼容NPN/PNP/干接点）、<strong>2路STO</strong>、3路继电器、2路模拟量输出</td>
+<td>FR30 端子更全</td>
+</tr>
+<tr>
+<td><strong>显示</strong></td>
+<td>资料未明确</td>
+<td><strong>LCD 中/英文提示</strong></td>
+<td>FR30 交互更好</td>
+</tr>
+<tr>
+<td><strong>通讯扩展</strong></td>
+<td>对比表显示扩展卡栏为空</td>
+<td><strong>支持多种通讯扩展卡</strong></td>
+<td>FR30 通讯更强</td>
+</tr>
+</tbody>
+</table>
+<h2>需要补充的客观点（避免一边倒）</h2>
+<ol>
+<li>
+<p><strong>FR20 也有而 FR30 资料未强调的</strong>：</p>
+<ul>
+<li><strong>透壁安装方式</strong>：FR20 明确支持，FR30 手册只写壁挂/导轨。</li>
+<li><strong>可选 USB 端口</strong>（升级程序/上位机）：FR20 列为可选，FR30 资料未提 USB。</li>
+<li><strong>PCB 增强三防涂覆</strong>：FR20 彩页列为特点，FR30 未提（不代表没有）。</li>
+</ul>
+</li>
+<li>
+<p><strong>过载能力的小提醒</strong>：FR30 彩页规格表过载为 <strong>120%/145%/160%（60s/10s/1s）</strong>，这是变转矩（P型）水平；FR20 资料未给出过载数字，不便直接对比。这点和 FR30 "高性能"定位看似反差，实则是其主推风机泵/变转矩+矢量控制的设计取向，以手册值为准。</p>
+</li>
+<li>
+<p><strong>功率覆盖</strong>：FR20 为三相 380V <strong>18.5~110kW</strong>；FR30 彩页覆盖 <strong>5.5~110kW</strong>，向下延伸到了更小功率。</p>
+</li>
+</ol>
+<p>⚠️ 说明：FR20 的公开资料（彩页/PPT）相对简略，主要列产品特点，未给出完整功能码与参数表；上表中标注"资料未列/未强调"的项，仅表示 FR20 手册未明确提及，<strong>不代表 FR20 一定不具备</strong>，需以各自完整手册核对。</p>
+<p>需要我把 FR30 全系列（5.5B~110B）的"轻载/重载输出电流 + 适配功率"对照表，或它的"有PG矢量控制（VC）"相关功能码（PG 卡、编码器参数）整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>首轮只列部分 FR30 特点，第二轮未作答；题目缺少两型号逐项比较依据。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：暂不计分</strong>此题原本缺乏足够的 FR20/FR30 同口径逐项对照，前两轮未计分。WorkBuddy 罗列了部分 FR30 特色，但“FR20 没有”或“FR30 独有”的说法不能由一方资料未列出直接推出；应先逐项核对两份原文再评分。</div></section>
+<section class="question" id="q68">
+<div class="question-heading">
+<div><span class="number">Q68</span><h2>载波频率相关的功能码 F00.13/F00.14/F00.15 分别是什么？默认值多少？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>F00.13 为固定载波频率（0.700~16.000kHz，机型确定）；F00.14 为载波上限频率（默认 8.00kHz）；F00.15 为载波下限频率（默认 2.000kHz）。此外 F00.12 的个位可选择载波方式（0固定载波、1随机载波、2固定载波并随温度调整、3随机载波并随温度调整）。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>暂不计分</span></div>
+<div class="answer-body"><p>根据参考资料，F00.13 / F00.14 / F00.15 在不同型号手册中的记载不完全一致。以下按文档章节分别列出原文记载：</p>
+<table>
+<thead>
+<tr>
+<th>来源文档及章节</th>
+<th>功能码</th>
+<th>名称</th>
+<th>说明 / 范围</th>
+<th>缺省值（默认值）</th>
+<th>属性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>《31.05.0153_FR523简易用户手册_中文_V3.0_中性_20260225.pdf》第三章【功能参数表】第 47 项</td>
+<td>F00.13</td>
+<td>固定载波频率</td>
+<td>0.700~16.000kHz</td>
+<td>机型确定</td>
+<td>△</td>
+</tr>
+<tr>
+<td>《31.05.0153_FR523简易用户手册_中文_V3.0_中性_20260225.pdf》第三章【功能参数表】第 48 项</td>
+<td>F00.14</td>
+<td>载波上限频率</td>
+<td>0.700~16.000kHz</td>
+<td>8.000kHz</td>
+<td>×</td>
+</tr>
+<tr>
+<td>《31.05.0153_FR523简易用户手册_中文_V3.0_中性_20260225.pdf》第三章【功能参数表】第 49 项</td>
+<td>F00.15</td>
+<td>载波下限频率</td>
+<td>0.700~16.000kHz</td>
+<td>2.000kHz</td>
+<td>×</td>
+</tr>
+<tr>
+<td>《31.05.0137_FR520简易用户手册_中文_V1.1_20260225.pdf》第二章【功能参数表】第 48 项</td>
+<td>F00.13</td>
+<td>固定载波频率</td>
+<td>0.700~16.000kHz</td>
+<td>机型确定</td>
+<td>△</td>
+</tr>
+<tr>
+<td>《31.05.0137_FR520简易用户手册_中文_V1.1_20260225.pdf》第二章【功能参数表】第 49 项</td>
+<td>F00.14</td>
+<td>载波上限频率</td>
+<td>0.700~16.000kHz</td>
+<td>8.000kHz</td>
+<td>×</td>
+</tr>
+<tr>
+<td>《31.05.0137_FR520简易用户手册_中文_V1.1_20260225.pdf》第二章【功能参数表】第 50 项</td>
+<td>F00.15</td>
+<td>载波下限频率</td>
+<td>0.700~16.000kHz</td>
+<td>2.000kHz</td>
+<td>×</td>
+</tr>
+<tr>
+<td>《31.05.0158_FR530简易用户手册_中文_V2.7_20260302.pdf》第二章【功能参数表】第 38 项</td>
+<td>F00.13</td>
+<td>固定载波频率</td>
+<td>0.700~16.000kHz</td>
+<td>机型确定</td>
+<td>△</td>
+</tr>
+<tr>
+<td>《31.05.0158_FR530简易用户手册_中文_V2.7_20260302.pdf》第二章【功能参数表】第 39 项</td>
+<td>F00.14</td>
+<td>载波上限频率</td>
+<td>1.000~16.000kHz</td>
+<td>8.000kHz</td>
+<td>X</td>
+</tr>
+<tr>
+<td>《31.05.0158_FR530简易用户手册_中文_V2.7_20260302.pdf》第二章【功能参数表】第 40 项</td>
+<td>F00.15</td>
+<td>载波下限频率</td>
+<td>1.000~16.000kHz</td>
+<td>2.000kHz</td>
+<td>×</td>
+</tr>
+<tr>
+<td>《FR01详细说明书.docx》第五章【功能参数表】5.1【基本功能参数简表】第 27 项</td>
+<td>F00.13</td>
+<td>固定载波频率</td>
+<td>0.700～12.000kHz；载波最高只能设置到12K</td>
+<td>机型确定</td>
+<td>△</td>
+</tr>
+<tr>
+<td>《FR01详细说明书.docx》第五章【功能参数表】5.1【基本功能参数简表】第 28 项</td>
+<td>F00.14</td>
+<td>频率设置（低于该参数设定的频率，载波是F00.15设置的载波频率，高于该频率，载波是F00.13设置的载波频率）</td>
+<td>0~20HZ</td>
+<td>8Hz</td>
+<td>×</td>
+</tr>
+<tr>
+<td>《FR01详细说明书.docx》第五章【功能参数表】5.1【基本功能参数简表】第 29 项</td>
+<td>F00.15</td>
+<td>低频率载波</td>
+<td>0.700～12.000kHz</td>
+<td>2.000kHz</td>
+<td>×</td>
+</tr>
+</tbody>
+</table>
+<h3>简要归纳</h3>
+<p>在 FR523、FR520、FR530 简易用户手册中：</p>
+<ul>
+<li>F00.13：固定载波频率，缺省值为 机型确定；</li>
+<li>F00.14：载波上限频率，缺省值为 8.000kHz；</li>
+<li>F00.15：载波下限频率，缺省值为 2.000kHz。</li>
+</ul>
+<p>其中，FR523 与 FR520 的 F00.14/F00.15 范围记载为 0.700~16.000kHz；FR530 的 F00.14/F00.15 范围记载为 1.000~16.000kHz。</p>
+<p>在 FR01 详细说明书中：</p>
+<ul>
+<li>F00.13：固定载波频率，缺省值为 机型确定；</li>
+<li>F00.14：频率设置（低于该参数设定的频率，载波是F00.15设置的载波频率，高于该频率，载波是F00.13设置的载波频率），缺省值为 8Hz；</li>
+<li>F00.15：低频率载波，缺省值为 2.000kHz。</li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>暂不计分</span></div>
+<div class="answer-body"><p>抱歉，在当前知识库参考资料中，未检索到与您问题相关的内容记录。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是 FR 系列 F00 组里载波频率相关的功能码，我从知识库检索这几个功能码的精确定义与默认值。
+已核对知识库原文（来源：《31050096-FR150A_CH_V1.5_.pdf》第五章/第六章 F00 系统参数组；FR 系列通用）。</p>
+<p><strong>结论先说：F00.13 / F00.14 / F00.15 是 F00 组里专门管载波频率的三个功能码，三者通过 <code>F00.12 PWM优化</code> 的"载波方式"位联动使用。</strong></p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>范围</th>
+<th>出厂值</th>
+<th>可改属性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>F00.13</strong></td>
+<td><strong>固定载波频率</strong></td>
+<td>0.700 ～ 16.000 kHz</td>
+<td><strong>机型确定</strong>（随功率型号不同）</td>
+<td>△（停机/运行均可改）</td>
+</tr>
+<tr>
+<td><strong>F00.14</strong></td>
+<td><strong>载波上限频率</strong></td>
+<td>0.700 ～ 16.000 kHz</td>
+<td><strong>8.000 kHz</strong></td>
+<td>×（仅停机可改）</td>
+</tr>
+<tr>
+<td><strong>F00.15</strong></td>
+<td><strong>载波下限频率</strong></td>
+<td>0.700 ～ 16.000 kHz</td>
+<td><strong>2.000 kHz</strong></td>
+<td>×（仅停机可改）</td>
+</tr>
+</tbody>
+</table>
+<h2>三者如何与 F00.12 配合</h2>
+<p><code>F00.12</code>（PWM优化，出厂值 500）的<strong>个位 = 载波方式</strong>，决定这三个码谁生效：</p>
+<table>
+<thead>
+<tr>
+<th>F00.12 个位</th>
+<th>载波方式</th>
+<th>由谁决定实际载波</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>固定载波</td>
+<td><strong>F00.13</strong> 固定值（默认 500 → 个位0，即固定载波）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>随机载波</td>
+<td>在 <strong>F00.15（下限）～ F00.14（上限）</strong> 间随输出频率线性变化</td>
+</tr>
+<tr>
+<td>2</td>
+<td>固定载波并随温度调整</td>
+<td>F00.13 基础上，机内升温时自动降载波</td>
+</tr>
+<tr>
+<td>3</td>
+<td>随机载波并随温度调整</td>
+<td>F00.15～F00.14 基础上，升温时自动降载波</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>出厂值 500 的个位是 <strong>0</strong> → 默认就是<strong>固定载波</strong>，由 F00.13 设定；F00.14/F00.15 是给"随机载波（设1或3）"用的上下限。</p>
+</blockquote>
+<h2>两个实用提醒</h2>
+<ol>
+<li><strong>F00.13 出厂值"机型确定"</strong>：不同功率机型出厂固定载波不同（小功率机型通常设得高，大功率为减小损耗/干扰设得低），具体数值看机型铭牌或型号表，不是统一一个数。</li>
+<li><strong>提高载波的降容规则</strong>（手册明确）：载波频率高于出厂设定值时，<strong>每增加 1kHz，变频器额定功率应下降 5%</strong>；反之载波越低，变频器温升/漏电流/对外干扰越小但电机噪音和损耗越大。现场调载波本质是"电机舒适度 vs 变频器温升/干扰"的取舍。</li>
+</ol>
+<p>需要的话，我可以把 F00 组（F00.00～F00.25）全部功能码的名称/范围/默认值整理成一张速查表，或针对你手头的具体机型（如 FR150A-4T-075、FR500 等）把 F00.13 的实际出厂载波频率查出来。</p>
+</div></article></div>
+<p class="note"><b>变化：</b>第二轮未作答；同号功能码跨型号可能不同，须先限定型号/文件。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：限定型号后可用</strong>此题功能码跨型号可能不同，前两轮均暂不计分。WorkBuddy 对 FR150A V1.5 的 F00.13/14/15 名称、范围、默认值与该手册一致；不能把这一组默认值直接称为所有 FR 系列通用。</div></section>
+<section class="question" id="q69">
+<div class="question-heading">
+<div><span class="number">Q69</span><h2>变频器的启停命令源有哪几种？对应哪个功能码？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>功能码 F02.00，三种命令源：0 操作面板（LED灯灭）、1 外部端子（LED灯亮）、2 计算机通讯（LED灯闪）。F02.01 设置频率运行方向（0正转/1反转），F02.02 正反转控制选择（0允许正反转/1禁止反转），F02.03 正反转死区时间（默认0.0s）。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0127_FR30简易用户手册_中文_20260525(V1.4).pdf》第 10 章【与出厂值不同功能码组 &gt; 7.0kW 20Ω 19.2Ω】中“技术与作业规程记录表”第 8～10 项记载，并在《31050096-FR150A_CH_V1.5_.pdf》第五章【功能参数表 &gt; 5.1 基本功能参数简表】、《31.05.0133_PV580用户手册_中文_V1.2_20260309.pdf》第 5 章【功能参数表 &gt; 5.1 基本功能参数简表】、《31.05.0191_FR20简易用户手册_eCH_V1.3_20260410.pdf》第二章【功能参数表】中均有相同记载：</p>
+<p>变频器的启停命令源对应功能码为：F02.00，名称为“启停命令源选择”。</p>
+<p>其可选类型如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>选项值</th>
+<th>选项含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F02.00</td>
+<td>启停命令源选择</td>
+<td>0</td>
+<td>操作面板(LED 灯灭）</td>
+</tr>
+<tr>
+<td>F02.00</td>
+<td>启停命令源选择</td>
+<td>1</td>
+<td>外部端子(LED 灯亮）</td>
+</tr>
+<tr>
+<td>F02.00</td>
+<td>启停命令源选择</td>
+<td>2</td>
+<td>计算机通讯(LED灯闪）</td>
+</tr>
+</tbody>
+</table>
+<p>补充说明：</p>
+<ul>
+<li>在《31.05.0127_FR30简易用户手册_中文_20260525(V1.4).pdf》《31050096-FR150A_CH_V1.5_.pdf》《31.05.0133_PV580用户手册_中文_V1.2_20260309.pdf》等文档中，F02.00 的缺省值记载为 0。</li>
+<li>不同文档中该功能码的属性符号存在 X 或 × 的排版差异，但功能码、名称及 0/1/2 三种启停命令源选项含义一致。</li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>部分可用</span></div>
+<div class="answer-body"><p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》【第六章参数说明】的参考记载：</p>
+<p>当累计运行时间≥F00.25设定的使用时间时，变频器将无法使用。当设定了F00.24密码后，F00.25修改需要先解锁F00.24经销商密码，重新设定时间后，需要输入经销商密码重新锁定。<br/>
+★：设置此参数可能致使变频器无法正常使用，请谨慎设置。</p>
+<p>F01 组 频率给定组</p>
+<p><span class="missing-image">原回答图片：F01 组 频率给定组</span></p>
+<p>图 6-1 频率给定示意图</p>
+<table>
+<thead>
+<tr>
+<th>F01.00</th>
+<th>频率源给定选择</th>
+<th>范围：0~7</th>
+<th>出厂值：0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0:主频率源给定有效 变频器的频率给定由F01.01主频率源给定方式决定。具体参考F01.01 功能码。 1:辅助频率源给定有效</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>变频器的频率给定由F01.03辅助频率源给定方式决定。具体参考 F01.03 功能码。 2:主频率源给定+辅助频率源给定 主频率源给定与辅助频率源给定的和作为设定频率。 3:主频率源给定-辅助频率源给定 主频率源给定与辅助频率源给定的差作为设定频率。 4:MAX{主频率源给定，辅助频率源给定}</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>F01.01主频率源给定方式范围：0~9出厂值：1</p>
+<p>0:主数字频率</p>
+<p>将F01.02的值作为当前主频率源的设定频率。</p>
+<p>1：键盘电位器</p>
+<p>将键盘电位器模拟量对应的频率的值作为当前主频率源的设定频率。</p>
+<p>2:AI1</p>
+<p>将AI1模拟量对应的频率的值作为当前主频率源的设定频率。</p>
+<p>AI1、AI2有（0~10V)电压输入或（0~20mA)电流输入可选。可通过控制板上AI1、AI2拨动开关来选择电压或电流输入，模拟量数值与频率的对应关系参考功能码F06.00～F06.15的具体说明。使用外部模拟量直接输入时，电压/电流模拟量输入的连接示意图如图6-2</p>
+<p><span class="missing-image">原回答图片：图6-2 使用外部电源模拟量输入示意图</span></p>
+<p>图6-2 使用外部电源模拟量输入示意图</p>
+<p>使用变频器内部10V电源结合电位器使用时，连接示意图如图6-3，注意此时拨动开关必须拨到电压输入侧。</p>
+<p><span class="missing-image">原回答图片：图6-3 使用内部10V 电源模拟量输入示意图</span></p>
+<p>图6-3 使用内部10V 电源模拟量输入示意图</p>
+<p>3:通讯给定</p>
+<p>上位机通过变频器内置的标准RS485通讯接口，向2001H设写入的频率值作为当前主频率源的设定频率。具体编程方法、操作方法、通讯协议等，请参考F15组功能码和MODBUS通讯协议附录说明。</p>
+<p>4:多段指令</p>
+<p>选择多段指令给定方式时，需要通过数字量输入DI端子的不同状态组合，对应不同的设定频率值。可以设置4个多段指令端子(端子功能13～16)，4个端子的16种状态，可以通过F12组功能码对应任意16个“多段指令”，“多段指令”是相对最大频率F01.08的百分比。</p>
+<p>数字量输入DI端子作为多段指令端子功能时，需要在F04组进行相应设置，具体内容请参考F04组相关功能参数说明。</p>
+<p>5:程序运行（简易PLC)</p>
+<p>设定频率由简易 PLC 确定。具体参考 F12 组功能码。</p>
+<p>6:过程 PID</p>
+<p>设定频率由过程闭环PID运算结果确定。具体参考F13组功能码。</p>
+<p>7:脉冲输入(HI)</p>
+<p>设定频率由端子的脉冲频率确定，只能由DI7/HI端子输入。此时需将DI7/HI端子设为“脉冲输入”功能，即将F00.09设为1，脉冲频率与设定频率的对应关系参见F06.32～F06.35功能说明。</p>
+<p>8:AI2</p>
+<p>将AI2模拟量对应的频率的值作为当前主频率源的设定频率。</p>
+<p>9:AI3</p>
+<p>将AI3模拟量对应的频率的值作为当前主频率源的设定频率。</p>
+<p>AI3的输入为-10V~+10V电压输入，电压的正负决定设定频率的方向。</p>
+<p>模拟量数值与频率的对应关系参考功能码F06.16～F06.23 的具体说明。</p>
+<p>FR200系列变频器主频率源最终的设定频率可以通过键盘UP/DOWN按键或者端子UP/DOWN功能进行叠加。而辅助频率源最终的设定频率没有此叠加功能。</p>
+<table>
+<thead>
+<tr>
+<th>F01.02</th>
+<th>主数字频率给定</th>
+<th>范围:0.00～FmaxHz</th>
+<th>出厂值: 50.00Hz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>当主频率源给定方式F01.01设为0时，该参数为变频器主频率源给定的初始设定频率。</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F01.03</td>
+<td>辅助频率源给定</td>
+<td>范围：0~9</td>
+<td>出厂值：0</td>
+</tr>
+</tbody>
+</table>
+<p>0:辅助数字频率</p>
+<p>将F01.04 的值作为当前辅助频率源的设定频率。</p>
+<p>1：键盘电位器</p>
+<p>将键盘电位器模拟量对应的频率的值作为当前辅助频率源的设定频率。</p>
+<p>2:AI1</p>
+<p>将AI1模拟量对应的频率的值作为当前辅助频率源的设定频率。</p>
+<p>3:通讯给定</p>
+<p>上位机通过变频器内置的标准RS485通讯接口，向2001H设写入的频率值作为当前辅助频率源的设定频率。</p>
+<p>4:多段指令</p>
+<p>设定频率由简易多段指令确定。具体参考F04组功能码。</p>
+<p>5:程序运行（简易PLC)</p>
+<p>设定频率由简易 PLC确定。具体参考F12 组功能码。</p>
+<p>6:过程 PID</p>
+<p>设定频率由过程闭环PID运算结果确定。具体参考F13组功能码</p>
+<p>7:脉冲输入(HI)</p>
+<p>将HI脉冲输入对应的频率的值作为当前辅助频率源的设定频率。</p>
+<p>8:AI2</p>
+<p>将AI2模拟量对应的频率的值作为当前辅助频率源的设定频率。</p>
+<p>9:AI3</p>
+<p>将AI3模拟量对应的频率的值作为当前辅助频率源的设定频率。</p>
+<table>
+<thead>
+<tr>
+<th>F01.04</th>
+<th>辅助数字频率给定</th>
+<th>范围：0.00～Fmax</th>
+<th>出厂值:50.00Hz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>当辅助频率源给定方式F01.03设为0时，该参数为变频器辅助频率源给定的初始设定频率。</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F01.05</td>
+<td>辅助频率源给定范围选择</td>
+<td>范围：0~1</td>
+<td>出厂值：0</td>
+</tr>
+</tbody>
+</table>
+<p>0:相对于最大频率</p>
+<p>1:相对于主频率源设定频率</p>
+<p>具体使用见 F01.06 说明。</p>
+<p>F01.06辅助频率源给定系数范围：0.0~150.0%出厂值：100.0%</p>
+<p>辅助频率源给定的最终设定频率还受F01.05和F01.06限制。</p>
+<p>F01.05选择0（相对于最大频率）时：</p>
+<p>辅助频率源给定的最终设定频率=辅助频率源给定的设定频率F01.06。</p>
+<p>F01.05选择1（相对于主频率源设定频率）时：</p>
+<p>辅助频率源给定的最终设定频率=（辅助频率源给定的设定频率*F01.06*主频率源给定的设定频率</p>
+<p>）/最大频率。</p>
+<p>F01.07点动频率给定范围：0.00~Fmax出厂值: 5.00Hz</p>
+<p>F01.08最大频率（Fmax）范围：20.00~600.00出厂值: 50.00Hz</p>
+<table>
+<thead>
+<tr>
+<th>F01.09</th>
+<th>上限频率（Fup）</th>
+<th>范围：Fdown～Fmax</th>
+<th>出厂值: 50.00Hz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F01.10</td>
+<td>下限频率（Fdown）</td>
+<td>范围：0.00～Fup</td>
+<td>出厂值: 0.00Hz</td>
+</tr>
+</tbody>
+</table>
+<p>上限频率是变频器启动后允许运行的最高频率；下限频率是变频器启动后允许运行的最低频率。</p>
+<p>1.上限频率，下限频率应根据实际受控电机铭牌参数和运行工况谨慎设定，避免电机长时间在低频状态下工作，否则会因过热而减少电机寿命；</p>
+<p>2.注意最大频率、上限频率、下限频率的彼此关系:0.00Hz ≤ Fdown ≤ Fup≤ Fmax ≤600.00Hz;</p>
+<table>
+<thead>
+<tr>
+<th>F01.11</th>
+<th>频率给定低于下限频率控制</th>
+<th>范围：0~1</th>
+<th>出厂值：0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F01.12</td>
+<td>下限频率运行时间</td>
+<td>范围：0.0~6000.0s</td>
+<td>出厂值：0.0s</td>
+</tr>
+</tbody>
+</table>
+<p>0:按下限频率运行</p>
+<p>若输出频率低于下限频率则以下限频率运行。<br/>
+1:下限频率运行时间到达后按0速运行<br/>
+若输出频率低于下限频率且延续F01.12设定的时间后，则以0速运行。</p>
+<table>
+<thead>
+<tr>
+<th>F01.13</th>
+<th>频率补偿起始频率</th>
+<th>范围：0.00~600.00Hz</th>
+<th>出厂值:50.00Hz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F01.14</td>
+<td>每 50Hz 频率补偿</td>
+<td>范围：0.00~50.00Hz</td>
+<td>出厂值:0.00Hz</td>
+</tr>
+</tbody>
+</table>
+<p>当频率超过F01.13设置的频率时，每超过50Hz，输出频率则按比例增加F01.14设置的值。</p>
+<p>F02.00启停命令源选择范围：0~2出厂值：0</p>
+<p>变频器的启停命令的启动、停车、正转、反转、点动5种命令受F02.00控制。<br/>
+0:操作面板（LED灯灭）</p>
+<p>由操作面板上的按键RUN、STOP/RES、MF.K（通过F16.00将多功能键MF.K设为点动运行按键）等进行启停命令控制。作面板LOC/REM指示灯灭，有关操作面板的使用请参见第四章使用说明。</p>
+<p>1:外部端子（LED灯亮）</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是通用的"启停命令源"问题，我以知识库里最完整的 FR600 手册为准检索其功能码定义（命令源通道通常在 F02 启停控制组）。
+已查到，知识库里有完整定义（来源：《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第六章 F02 组）。</p>
+<p><strong>变频器的启停命令源（以孚瑞肯 FR 系列 FR600 为准，同系 SY380/REK10/IF150 机制一致）共有 3 种，由功能码 <code>F02.00 启停命令源选择</code> 设定（范围 0~2，出厂值 0）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>设定值</th>
+<th>命令源</th>
+<th>操作面板 LOC/REM 指示灯</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0</strong></td>
+<td><strong>操作面板</strong>（键盘 RUN / STOP·RES / MF.K 点动键）</td>
+<td>灭</td>
+</tr>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>外部端子</strong>（控制端子 DI 给定启停/正反转）</td>
+<td>亮</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>计算机通讯</strong>（RS485 上位机，写 2000H 命令字）</td>
+<td>闪</td>
+</tr>
+</tbody>
+</table>
+<h2>要点</h2>
+<ul>
+<li><strong>功能码</strong>：就是 <strong>F02.00</strong>（在 F02「启停控制」参数组内）。</li>
+<li><strong>控制范围</strong>：F02.00 决定的是启动、停车、正转、反转、点动这 5 类命令的通道来源。</li>
+<li>面板指示灯状态（灭/亮/闪）能直观判断当前命令源，是现场排查的好用信号。</li>
+</ul>
+<h2>补充：运行中切换命令源</h2>
+<p>除了 F02.00 固定设定，F04 组里 DI 端子还可设以下功能，在运行中临时切换命令通道（沿触发）：</p>
+<ul>
+<li>功能码 <strong>29</strong>：启停命令切换至操作面板</li>
+<li>功能码 <strong>30</strong>：启停命令切换至端子控制</li>
+<li>功能码 <strong>31</strong>：启停命令切换至通讯控制</li>
+</ul>
+<p>注：上面这是 FR 系列（FR600 手册明确）的定义。如果你指的是某个特定机型（比如之前查的 SY380/REK10/IF150），它们的「启停命令源」同样是 3 种（面板/端子/通讯），功能码也都在 F02 组；需要我针对某一款把精确功能码编号和功能码表全部拉出来核对吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>第二轮先转储大量频率参数，答案截断于外部端子，漏计算机通讯。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，推广过度</strong>首轮网站完整答出三种命令源，重测漏通讯；WorkBuddy 恢复 F02.00 的 0/1/2 选项与灯态。FR600、SY380、REK10、IF150 是不同系列，且端子沿触发切换不等于“临时切换后自动恢复”。</div></section>
+<section class="question" id="q76">
+<div class="question-heading">
+<div><span class="number">Q76</span><h2>变频器操作面板采用几级菜单结构？分别是什么？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>采用三级菜单结构：功能参数组（I级菜单）→ 功能码（II级菜单）→ 功能码设定值（III级菜单）。FR500&amp;FR510 变频器的操作面板即采用此结构进行参数设置等操作。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>抱歉，当前知识库参考资料中未收录此相关内容。</p>
+<p>根据《变频器参数设置与调试技巧.pptx》第 3 页【操作面板按键和电位器功能】，以及《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》《31050096-FR150A_CH_V1.5_.pdf》《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》中“4.1.1 操作面板按键和电位器功能”等章节记载，现有资料仅明确：</p>
+<ul>
+<li>退出键：用于“一级菜单进入或退出”；</li>
+<li>确认键：用于“逐级进入菜单画面、设定参数确认”。</li>
+</ul>
+<p>但参考资料中未明确记载变频器操作面板具体采用几级菜单结构，也未列出各级菜单分别是什么，因此无法基于当前资料给出确定结论。</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>抱歉，当前知识库参考资料中未收录此相关内容。</p>
+<p>根据《变频器参数设置与调试技巧.pptx》第 3 页【操作面板按键和电位器功能】记载，仅能确认：</p>
+<ul>
+<li>退出键：用于“一级菜单进入或退出”；</li>
+<li>确认键：用于“逐级进入菜单画面、设定参数确认”。</li>
+</ul>
+<p>但参考资料中未明确记载变频器操作面板具体采用几级菜单结构，也未列出各级菜单分别是什么，因此无法基于现有资料给出确定结论。</p>
+<p>参考出处与依据 (5 处权威摘录)</p>
+<h2>判定</h2>
+<p>错误。旧记录已核对 FR500&amp;FR510 中文手册第 51 页第 4.2 节，该处明确写有“三级菜单结构”及三个层级；本轮仍未召回并回答这一内容。与上次相比，核心问题未改善。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是关于操作面板菜单结构的通用问题，我以知识库里最完整的 FR600 手册为准检索。
+已查到，知识库里有明确原文（来源：《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第四章 操作与显示）。</p>
+<p><strong>FR600 操作面板采用三级菜单结构。</strong></p>
+<h2>三级菜单分别是什么</h2>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>名称</th>
+<th>内容</th>
+<th>进入方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>I 级菜单</strong></td>
+<td>功能参数组</td>
+<td>如 F00、F01、F02……F17、U00、U01 等参数组</td>
+<td>按 ENT 逐级进入</td>
+</tr>
+<tr>
+<td><strong>II 级菜单</strong></td>
+<td>功能码</td>
+<td>各组内的具体功能码，如 F01.01、F02.00</td>
+<td>在组内用 ▲/▼ 切换</td>
+</tr>
+<tr>
+<td><strong>III 级菜单</strong></td>
+<td>功能码设定值</td>
+<td>该参数当前的数值/选项，可修改</td>
+<td>选中功能码后按 ENT</td>
+</tr>
+</tbody>
+</table>
+<h2>操作要点</h2>
+<ul>
+<li><strong>ENTER（ENT）键</strong>：逐级进入菜单，确认参数修改。</li>
+<li><strong>ESC 键</strong>：退出当前级菜单，且<strong>放弃未保存的修改</strong>直接返回。</li>
+<li>在 III 级菜单下，若参数<strong>没有闪烁位</strong>，说明该功能码不可修改（可能是只读检测量，或需停机才能改）。</li>
+<li>参数未修改时按 ENT → 自动跳到下一个功能码；修改后按 ENT → 显示 <code>-END-</code> 1 秒后回到当前功能码（再按 ENT 进下一个）。</li>
+</ul>
+<h2>一个补充区分：菜单"模式" vs 菜单"结构"</h2>
+<p>不要和前面查过的「快捷菜单 / 基本菜单」混淆——那是 <strong>F00.01 的显示模式</strong>（影响二级菜单里功能码显示方式，如快捷菜单最后一位带小数点不闪烁），而<strong>三级菜单结构本身不变</strong>。两种模式下都是"组 → 功能码 → 设定值"这三级。</p>
+<p>横向看，你之前问过的 FR600/SY380/REK10/IF150 同属孚瑞肯 FR 系列，面板菜单结构一致，都是这套三级。需要我把三级菜单的操作流程图或某功能码的具体修改步骤整理出来吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>两轮均未答出三级菜单及各层名称。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确，推广过度</strong>两轮网站均未答出三级结构；WorkBuddy 准确给出 FR600 的“参数组→功能码→设定值”。但“FR600/SY380/REK10/IF150 同属 FR 系列、面板完全一致”不成立，应逐型号核实。</div></section>
+<section class="question" id="q77">
+<div class="question-heading">
+<div><span class="number">Q77</span><h2>什么是快捷菜单？和基本菜单怎么区分、怎么切换？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>FR 系列变频器软件版本 V1.07 及以上，出厂菜单模式改为快捷菜单（F00.01=1），基本菜单为 F00.01=0。显示区别在第二级菜单：快捷菜单功能码最后一位带小数点且不闪烁，按上下键按 F17 组设定的功能码切换；基本菜单功能码最后一位不带小数点且闪烁，按功能码01、02…顺序切换。切换方法：①修改 F00.01；②在第二级菜单下长按对应按键自动切换。F17 组最多提供 30 个用户定制参数。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第四章操作与显示【4.7快捷菜单（用户定制参数）功能说明】，并与《31050053-FR500&amp;FR510_CH_V2.7_20260203.pdf》第四章操作与显示【4.7快捷菜单（用户定制参数)功能说明】、《31.05.0130_SY380用户手册_中文_20260602(V1.3).pdf》第四章 操作与显示【4.7快捷菜单（用户定制参数）功能说明】、《31050096-FR150A_CH_V1.5_.pdf》第四章 操作与显示【4.7快捷菜单（用户定制参数）功能说明】的记载，回答如下：</p>
+<h3>1. 什么是快捷菜单</h3>
+<p>资料记载：</p>
+<ul>
+<li>为了便于用户快速设置一般常用参数，FR系列变频器软件版本在 V1.07版及以上，出厂菜单模式改为 快捷菜单。</li>
+<li>快捷菜单对应参数为：F00.01=1。</li>
+<li>默认的快捷参数见 F17组。</li>
+<li>若默认的快捷参数满足不了用户需求，用户可以根据实际情况自定义快捷参数，具体方法参见 F17组说明。</li>
+</ul>
+<h3>2. 快捷菜单和基本菜单怎么区分</h3>
+<p>资料明确说明：快捷菜单与基本菜单（F00.01=0）在显示上面的区别在第二级菜单，以便于用户区分。</p>
+<h4>2.1 显示区别（第二级菜单）</h4>
+<table>
+<thead>
+<tr>
+<th>菜单模式</th>
+<th>第二级菜单显示区别</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>快捷菜单</td>
+<td>F01.01. 功能码最后一位带小数点，且不闪烁</td>
+</tr>
+<tr>
+<td>基本菜单</td>
+<td>F01.01 功能码最后一位不带小数点，且闪烁</td>
+</tr>
+</tbody>
+</table>
+<h4>2.2 功能区别（资料中列出的可辨识内容）</h4>
+<p>资料中还列出了功能区别，摘录中个别按键字符存在排版粘连或不完整，以下为可辨识内容：</p>
+<table>
+<thead>
+<tr>
+<th>菜单模式</th>
+<th>功能区别</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>快捷菜单</td>
+<td>按照 F17组 设定功能码向上或向下切换；按键不能返回到第一级菜单</td>
+</tr>
+<tr>
+<td>基本菜单</td>
+<td>按照功能码 01、02…… 顺序向上或向下切换；按键可以返回到第一级菜单组 F01</td>
+</tr>
+</tbody>
+</table>
+<h3>3. 快捷菜单和基本菜单怎么切换</h3>
+<p>资料列出的切换方法如下：</p>
+<table>
+<thead>
+<tr>
+<th>切换方向</th>
+<th>方法1</th>
+<th>方法2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>快捷菜单 → 基本菜单</td>
+<td>通过修改 F00.01=0 切换至基本菜单</td>
+<td>显示第二级菜单下，长按原文所示“》”键，自动切换至基本菜单</td>
+</tr>
+<tr>
+<td>基本菜单 → 快捷菜单</td>
+<td>通过修改 F00.01=1 切换至快捷菜单</td>
+<td>显示第二级菜单下，长按原文所示按键，自动切换至快捷菜单</td>
+</tr>
+</tbody>
+</table>
+<p>说明：当前参考资料摘录中，“基本菜单 → 快捷菜单”的长按按键符号显示不完整，写作“长按 键”，因此仅凭当前摘录无法确认该长按按键的具体图形；可确定的切换方法为修改 F00.01=1。</p>
+<h3>4. 相关图示（进入快捷菜单界面）</h3>
+<p>根据《31.05.0152_FR33简易用户手册_中文_中性_V1.0_20260224.pdf》第二章操作与显示【进入快捷菜单界面】：</p>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》【3.2快捷菜单（用户定制参数）功能说明】的参考记载：</p>
+<p>为了便于用户快速设置一般常用参数，FR系列变频器软件版本在V1.07版及以上，出厂菜单模式改为快捷菜单（F00.01=1），默认的快捷参数见后面的附表。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>单模式改为快捷菜单（F00.01=1），默认的快捷参数见后面的附表。</th>
+<th>快捷菜单与基本菜单（F00.01=0）在显示上面的区别在第二级菜单，以便于用户区分，下</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>菜单模式 显示区别&lt;br&gt;（第二级）</td>
+<td>快捷菜单</td>
+<td>基本菜单</td>
+</tr>
+<tr>
+<td></td>
+<td>功能码最后一位带小数点，且不&lt;br&gt;闪烁</td>
+<td>功能码最后一位不带小数点，且闪烁</td>
+</tr>
+</tbody>
+</table>
+<p>按照 F17 组</p>
+<p>快捷菜单与基本菜单（F00.01=0）在显示上面的区别在第二级菜单，以便于用户区分，下表列出了基本菜单与快捷菜单区分和切换方法。</p>
+<table>
+<thead>
+<tr>
+<th>菜单模式</th>
+<th>快捷菜单</th>
+<th>基本菜单</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显示区别(第二级)</td>
+<td>F01.01.功能码最后一位带小数点，且不闪烁</td>
+<td>F01.01功能码最后一位不带小数点，且闪烁</td>
+</tr>
+<tr>
+<td>功能区别</td>
+<td>A或者V1、按按照 F17 组设定功能码向上或向下切换ESC2、按键不能返回到第一级菜单</td>
+<td>A或者V1、按按照功能码01、02……顺序向上或向下切换ESC2、按键可以返回到第一级菜单组F01</td>
+</tr>
+</tbody>
+</table>
+<p>顺序向上或向下切换<br/>
+键可以返回到第一级菜单组<br/>
+键不能返回到第一级</p>
+<table>
+<thead>
+<tr>
+<th>互相切换</th>
+<th>方法1、通过修改F00.01=0切换至基本菜单方法2、显示第二级菜单下，长按》键，自动切换至基本菜单。</th>
+<th>方法1、通过修改F00.01=1切换至快捷菜单》方法2、显示第二级菜单下，长按键，自动切换至快捷菜单。</th>
+</tr>
+</thead>
+</table>
+<p>方法 1、通过修改 F00.01=1 切换至快捷菜单<br/>
+方法 2、显示第二级菜单下，长按<br/>
+自动切换至快捷菜单。<br/>
+键，自动切换至基本菜单。</p>
+<p>若默认的快捷参数满足不了用户需求，用户可以根据实际情况，自定义快捷参数，具体方法是修改F17组对应功能码。<br/>
+法是修改 F17 组对应功能码。</p>
+<p>F17组最多提供30个用户定制参数，F17组参数显示值为00.00，则表示该用户功能码为空。进入用户定制参数模式时，显示功能码由F17-00～F17-29定义，顺序与F17组功能码一致，为00.00则跳过。其中小数点左边两位表示功能码组，右边两位表示在此功能码组的位置。例<br/>
+空。进入用户定制参数模式时，显示功能码由 F17-00～F17-29 定义，顺序与 F17 组功能码一致，<br/>
+为 00.00 则跳过。其中小数点左边两位表示功能码组，右边两位表示在此功能码组的位置。例<br/>
+如:05.15 表示 F05.15。F00～F20 组对应小数点左边两位 00～20，U00 和 U01 组对应 48 和 49。</p>
+<table>
+<thead>
+<tr>
+<th>功能码为空。</th>
+<th>附表:快捷菜单出厂参数</th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F00.00</td>
+<td>用户密码</td>
+<td>0～65535</td>
+<td></td>
+<td>×</td>
+</tr>
+</tbody>
+</table>
+<p>0:显示所有功能码</p>
+<p>如:05.15表示F05.15。F00~F20组对应小数点左边两位00~20，U00和U01组对应48和49。设置为21～46表示该用户功能码为空。右边两位每组大于设定组功能码个数时，也表示用户功能码为空。</p>
+<p>附表:快捷菜单出厂参数</p>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>说明</th>
+<th>缺省值</th>
+<th>属性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F00.00</td>
+<td>用户密码</td>
+<td>0~65535</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.01</td>
+<td>功能码显示</td>
+<td>0:显示所有功能码</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.01</td>
+<td>功能码显示</td>
+<td>1:显示F00.00、F00.01和用户设定功能码</td>
+<td>1</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+<p>F00.01 功能码显示</p>
+<table>
+<thead>
+<tr>
+<th>F00.01</th>
+<th>功能码显示</th>
+<th>2:显示 F00.00、F00.01 和与出厂值不同的功能码</th>
+<th>1</th>
+<th>X</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F00.03</td>
+<td>变频器机型选择</td>
+<td>0:G型（恒转矩负载机型）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F00.03</td>
+<td>变频器机型选择</td>
+<td>1:P型（风机、水泵类负载机型）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+<p>1:P 型（风机、水泵类负载机型）</p>
+<table>
+<thead>
+<tr>
+<th>F01.01</th>
+<th>主频率源给定方式</th>
+<th>0:主数字频率</th>
+<th>1</th>
+<th>X</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>8:AI2</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F02.00</td>
+<td>启停命令源选择 1:外部端子（LED 灯亮） ×</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F02.01</td>
+<td>频率运行方向</td>
+<td>1:反转 0:减速停车</td>
+<td></td>
+<td>△</td>
+</tr>
+<tr>
+<td>F02.12</td>
+<td>停车方式选择</td>
+<td>1:自由停车</td>
+<td></td>
+<td>×</td>
+</tr>
+<tr>
+<td>F04.00</td>
+<td>端子 DI1 功能选择</td>
+<td>1:正转运行（FWD）</td>
+<td></td>
+<td>×</td>
+</tr>
+<tr>
+<td>F04.01</td>
+<td>端子 DI2 功能选择</td>
+<td>2:反转运行（REV）</td>
+<td></td>
+<td>×</td>
+</tr>
+<tr>
+<td>F04.02</td>
+<td>端子 DI3 功能选择</td>
+<td>7:变频器故障复位</td>
+<td></td>
+<td>×</td>
+</tr>
+<tr>
+<td>F04.03</td>
+<td>端子 DI4 功能选择 继电器 R1 输出功</td>
+<td>13:多段指令端子 1</td>
+<td></td>
+<td>×</td>
+</tr>
+<tr>
+<td>F05.02</td>
+<td>能选择</td>
+<td>2:变频器故障</td>
+<td></td>
+<td>×</td>
+</tr>
+<tr>
+<td>F08.01</td>
+<td>电机 1 额定功率</td>
+<td>0.1~1000.0kW</td>
+<td>机型确定</td>
+<td>×</td>
+</tr>
+<tr>
+<td>F08.04</td>
+<td>电机 1 额定频率</td>
+<td>20.00~Fmax</td>
+<td>机型确定</td>
+<td>×</td>
+</tr>
+<tr>
+<td>F08.05</td>
+<td>电机 1 额定转速</td>
+<td>1~30000 0:不辩识</td>
+<td>机型确定</td>
+<td>×</td>
+</tr>
+<tr>
+<td>F08.30</td>
+<td>参数自辩识</td>
+<td>1:异步电机静止自辨识</td>
+<td></td>
+<td>×</td>
+</tr>
+</tbody>
+</table>
+<p>2:异步电机旋转自辨识</p>
+<table>
+<thead>
+<tr>
+<th>F01.01</th>
+<th>主频率源给定方式</th>
+<th>1：键盘电位器</th>
+<th>1</th>
+<th>X</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F01.01</td>
+<td>主频率源给定方式</td>
+<td>2:AI1</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F01.01</td>
+<td>主频率源给定方式</td>
+<td>3:通讯给定</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F01.01</td>
+<td>主频率源给定方式</td>
+<td>4：多段指令</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F01.01</td>
+<td>主频率源给定方式</td>
+<td>5:程序运行（简易PLC）</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F01.01</td>
+<td>主频率源给定方式</td>
+<td>6:过程PID</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F01.01</td>
+<td>主频率源给定方式</td>
+<td>7:脉冲输入(HI)</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F01.01</td>
+<td>主频率源给定方式</td>
+<td>8:AI2</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F01.01</td>
+<td>主频率源给定方式</td>
+<td>9:AI3</td>
+<td>1</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F02.00</td>
+<td>启停命令源选择</td>
+<td>0:操作面板（LED灯灭）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F02.00</td>
+<td>启停命令源选择</td>
+<td>1:外部端子（LED灯亮）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F02.00</td>
+<td>启停命令源选择</td>
+<td>2:计算机通讯（LED灯闪）</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F02.01</td>
+<td>频率运行方向</td>
+<td>0:正转</td>
+<td>0</td>
+<td>△</td>
+</tr>
+<tr>
+<td>F02.01</td>
+<td>频率运行方向</td>
+<td>1:反转</td>
+<td>0</td>
+<td>△</td>
+</tr>
+<tr>
+<td>F02.12</td>
+<td>停车方式选择</td>
+<td>0:减速停车</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F02.12</td>
+<td>停车方式选择</td>
+<td>1: 自由停车</td>
+<td>0</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F03.00</td>
+<td>加速时间0</td>
+<td>0.0~6000.0s</td>
+<td>15.0s</td>
+<td>△</td>
+</tr>
+<tr>
+<td>F03.01</td>
+<td>减速时间0</td>
+<td>0.0~6000.0s</td>
+<td>15.0s</td>
+<td>△</td>
+</tr>
+<tr>
+<td>F04.00</td>
+<td>端子 DI1 功能选择</td>
+<td>1：正转运行（FWD）</td>
+<td>1</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>名称</th>
+<th>说明</th>
+<th>缺省值</th>
+<th>属性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F04.01</td>
+<td>端子 DI2 功能选择</td>
+<td>2:反转运行（REV）</td>
+<td>2</td>
+<td>X</td>
+</tr>
+<tr>
+<td>F04.02</td>
+<td>端子 DI3 功能选择</td>
+<td>7:变频器故障复位</td>
+<td>7</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>"快捷菜单/基本菜单"是操作面板的一种显示/操作模式，之前我在讲三级菜单结构时提到它跟 F00.01 有关，但没展开。我专门从知识库检索它的精确定义、区别和切换方式。
+已从知识库取到 FR 系列操作面板的"快捷菜单/基本菜单"原文（来源：《31050096-FR150A_CH_V1.5_.pdf》第四章 操作与显示 4.7 节；英文版 V1.3 第 4.7 节）。FR 系列结构一致。</p>
+<p><strong>结论先说：快捷菜单和基本菜单是操作面板的两种「显示/切换模式」，由 <code>F00.01 功能码显示</code> 控制，它不改变三级菜单结构本身（组→功能码→设定值三级不变），只改变二级菜单里"显示哪些码、怎么切、ESC 怎么走"。</strong></p>
+<h2>一、什么是快捷菜单（及基本菜单）</h2>
+<ul>
+<li><strong>快捷菜单</strong>（F00.01 = 1）：FR 系列软件 <strong>V1.07 及以上出厂默认</strong>就是它，"为了便于用户快速设置一般常用参数"。它只显示 <strong>F17 组里用户自定义的常用功能码</strong>（出厂已预设一组，如 00.03、01.01、01.02、01.08…）。</li>
+<li><strong>基本菜单</strong>（F00.01 = 0）：完整显示全部功能码，按 F00/F01/F02… 正常顺序浏览。</li>
+</ul>
+<blockquote>
+<p>补充：<code>F00.01</code> 还有第 3 档 = 2（只显示"与出厂值不同的功能码"），用于快速排查改过的参数，但它既不是快捷也不是基本，是独立的一档。</p>
+</blockquote>
+<h2>二、两者怎么区分（核心在第二级菜单）</h2>
+<table>
+<thead>
+<tr>
+<th>区分维度</th>
+<th>快捷菜单（F00.01=1）</th>
+<th>基本菜单（F00.01=0）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>二级菜单显示</strong></td>
+<td>功能码<strong>最后一位带小数点，且不闪烁</strong></td>
+<td>功能码<strong>最后一位不带小数点，且闪烁</strong></td>
+</tr>
+<tr>
+<td><strong>▲/▼ 切换逻辑</strong></td>
+<td>按 <strong>F17 组</strong>设定的功能码清单上下切换</td>
+<td>按功能码 <strong>01、02、03…</strong> 全量顺序上下切换</td>
+</tr>
+<tr>
+<td><strong>ESC 键行为</strong></td>
+<td><strong>不能</strong>返回到第一级菜单（组）</td>
+<td><strong>可以</strong>返回到第一级菜单组（F01…）</td>
+</tr>
+</tbody>
+</table>
+<h2>三、怎么切换（两种方法，现场都常用）</h2>
+<p><strong>切到基本菜单</strong></p>
+<ul>
+<li>方法 1：把 <code>F00.01</code> 改为 <code>0</code></li>
+<li>方法 2：在<strong>二级菜单显示状态下，长按 <code>&gt;&gt;</code>（移位键）</strong> 自动切到基本菜单</li>
+</ul>
+<p><strong>切到快捷菜单</strong></p>
+<ul>
+<li>方法 1：把 <code>F00.01</code> 改为 <code>1</code></li>
+<li>方法 2：在<strong>二级菜单显示状态下，长按 <code>&gt;&gt;</code> 键</strong> 自动切回快捷菜单</li>
+</ul>
+<blockquote>
+<p>长按 <code>&gt;&gt;</code> 是最快的现场切换手段，不用进 F00.01 改参数。</p>
+</blockquote>
+<h2>四、实用提示</h2>
+<ol>
+<li><strong>自定义快捷参数</strong>：若出厂默认快捷码不够用，可在 <strong>F17 组（F17.00~F17.29，共 30 个）</strong> 里把每个快捷位指向你常用的功能码（范围 00.00~49.99），改完即生效于快捷菜单。</li>
+<li><strong>别和"三级菜单结构"混淆</strong>：之前讲过面板是"组→功能码→设定值"三级，这个结构在快捷/基本两种模式下都不变；变的是二级菜单里功能码的呈现与切换方式。</li>
+<li><strong>ESC 的差异要留意</strong>：在快捷菜单下误按 ESC 不会退到一级菜单组，按 ▲/▼ 也只在 F17 列表里跳——这是新手常卡住的地方，想回到组级浏览就长按 <code>&gt;&gt;</code> 切到基本菜单。</li>
+</ol>
+<p>需要的话，我可以把 F17 组 30 个快捷功能码的出厂默认值（如 F17.00=00.03、F17.01=01.01…）整理成一张"快捷键→对应功能码"对照表，或把 F00.01 三档的适用场景再细化。</p>
+</div></article></div>
+<p class="note"><b>变化：</b>核心信息仍在，但第二轮表格串列、按键符号丢失，易误导操作。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：核心正确</strong>两轮网站都含主要规则，但第二轮的表格与按键符号较难读。WorkBuddy 清楚区分快捷/基本菜单、F00.01 和二级菜单表现；长按键操作仍应参照具体机型面板图示。</div></section>
+<section class="question" id="q78">
+<div class="question-heading">
+<div><span class="number">Q78</span><h2>变频器的状态监视参数和故障记录分别在哪个组？</h2></div>
+<a class="back" href="#top">返回目录 ↑</a>
+</div><div class="standard-answer"><strong>题库参考答案（可按原文复核）</strong><p>U00 组为状态监视组，U01 组为故障记录组；F00~F16 为基本功能参数。运行和停车监视信息可在 U00 组中分别设定 4 个监视对象。</p>
+</div>
+<div class="comparison">
+<article class="answer-card old">
+<div class="card-head"><strong>首次网站回答</strong><span>直接可用</span></div>
+<div class="answer-body"><p>根据《31050096-FR150A_CH_V1.5_.pdf》第六章【参数说明】中“U00 组 状态监视组”和“U01 组 故障记录组”的记载，并结合《31.05.0130_SY380用户手册_中文_20260602(V1.3).pdf》第六章【参数说明】、《31.05.0060_FR600 用户手册_中文_V2.1_20260225.pdf》第六章【参数说明】中的相同内容，变频器的状态监视参数和故障记录分别位于以下参数组：</p>
+<table>
+<thead>
+<tr>
+<th>信息类型</th>
+<th>所在参数组</th>
+<th>参数组名称</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>状态监视参数</td>
+<td>U00 组</td>
+<td>状态监视组</td>
+</tr>
+<tr>
+<td>故障记录</td>
+<td>U01 组</td>
+<td>故障记录组</td>
+</tr>
+</tbody>
+</table>
+<p>补充说明：</p>
+<ul>
+<li>U00 组用于监视变频器运行状态信息，例如输出频率、设定频率、输出电压、输出电流、输出电功率、输出转速、直流母线电压、PID 给定、PID 运算反馈、DI/AI/开关量输入输出状态、模块温度、运行时间、累计时间、实际计数值、实际长度值、线速度、输出转矩、功耗等。</li>
+<li>U01 组用于记录故障信息，例如当前故障类别、当前故障时输出频率、当前故障时输出电流、当前故障时母线电压、当前故障时累计运行时间，以及前 1 次、前 2 次等历史故障记录。</li>
+</ul>
+</div>
+
+</article>
+<article class="answer-card new">
+<div class="card-head"><strong>重测网站回答</strong><span>错误</span></div>
+<div class="answer-body"><p>抱歉，在当前知识库参考资料中，未检索到与您问题相关的内容记录。</p>
+</div>
+
+</article>
+<article class="answer-card mcp"><div class="card-head"><strong>WorkBuddy · MCP 回答</strong><span>用户提供</span></div><div class="answer-body"><p>这是 FR 系列功能码组分布的固定结构，之前检索 FR150A 手册的「功能码组分布一览表」里已经有明确原文（来源：《31050096-FR150A_CH_V1.5_.pdf》第五章），直接给你结论。</p>
+<p><strong>状态监视参数和故障记录分别在不同的 U 组——</strong></p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>功能码组</th>
+<th>组名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>状态监视参数</strong></td>
+<td><strong>U00 组</strong></td>
+<td>状态监视功能组</td>
+<td>实时运行数据：设定频率、输出频率、输出电流、电压、转速、功率等</td>
+</tr>
+<tr>
+<td><strong>故障记录</strong></td>
+<td><strong>U01 组</strong></td>
+<td>故障监视功能组</td>
+<td>故障/告警记录：故障代码、故障次数、最近故障类别（如前 13 次故障）、故障时的运行参数等</td>
+</tr>
+</tbody>
+</table>
+<h2>补充几个实用关联点</h2>
+<ol>
+<li><strong>U00 的具体内容举例</strong>：<code>U00.00</code> 设定频率、<code>U00.01</code> 输出频率、<code>U00.05</code> 转速（按 F16.11 系数换算）、<code>U00.35</code> 累计功耗（F00.04=6 可清零）等，范围 <code>U00.00~U00.99</code>。</li>
+<li><strong>面板快捷看 U00</strong>：在停机/运行状态下按 <code>&gt;&gt;</code>（移位键）循环显示 4 个监视量，这 4 个内容由 <code>F16.03~F16.06</code>（运行显示）和 <code>F16.07~F16.10</code>（停车显示）从 U00 组里挑选。</li>
+<li><strong>U01 故障记录的管理</strong>：<code>F00.04=2</code> 可清除 U01 组所有故障信息；<code>F01.14</code> 还引用了 <code>U01.25</code>（前 13 次故障类别）用于故障追溯。</li>
+<li><strong>读写属性</strong>：U00 / U01 都是<strong>只读检测/记录值</strong>，不能修改；恢复出厂值（<code>F00.04=1/5</code>）也<strong>不会</strong>刷新这些记录值（U00 为实时量、U01 为历史记录，均保留）。</li>
+</ol>
+<p>一句话记忆：<strong>U00 看实时状态，U01 查故障历史</strong>。FR 全系列（FR150A/FR500/FR510/FR600 等）这套 U00/U01 分组一致。</p>
+<p>需要我把 U00 组（U00.00~U00.99）和 U01 组的完整参数清单（名称+含义）整理成一张速查表吗？</p>
+</div></article></div>
+<p class="note"><b>变化：</b>第二轮称未检索到；但本轮 Q31 的回答里实际出现 U00/U01，检索稳定性存在问题。</p>
+<div class="triple-analysis"><strong>三方分析｜WorkBuddy：正确</strong>首轮网站直接答出 U00/U01，重测误称未收录；WorkBuddy 再次明确 U00 看状态、U01 查故障，满足题目。后续列举的单个监视项并非本题评分必需。</div></section>
+</main></body></html>
